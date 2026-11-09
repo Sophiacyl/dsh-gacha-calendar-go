@@ -1,5 +1,7 @@
 // Keep detail/selection titles full-width; compact only the game overview.
 export const PAGE_SIZE = 8
+// Upstream scheduleKindIcon: four-point star (gacha), pennant (event).
+const withKindMark = value => value.replace(/卡池/g, '✦ 卡池').replace(/活动/g, '⚑ 活动')
 export function gameRows(items, iconFor, page = 'games') {
 	return items.map(item => {
 		const src = iconFor(item)
@@ -9,7 +11,7 @@ export function gameRows(items, iconFor, page = 'games') {
 				{ type: 'text', text: item.title, style: { size: 'body', weight: 'semibold', maxLines: 20 } },
 			]
 			if (item.trailing) lines.push({ type: 'text', text: item.trailing, style: { size: 'caption', maxLines: 20 } })
-			if (status) lines.push({ type: 'text', text: status, tone: 'muted', style: { size: 'caption', maxLines: 20 } })
+			if (status) lines.push({ type: 'text', text: withKindMark(status), tone: 'muted', style: { size: 'caption', maxLines: 20 } })
 			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 1] } : {}) }, children: [
 				...(src ? [{ type: 'stack', style: { align: 'end' }, children: [{ type: 'avatar', src, alt: item.title, aspect: 1 }] }] : []),
 				{ type: 'stack', style: { gap: 'S', align: 'start' }, children: lines },
@@ -36,7 +38,7 @@ export function gameRows(items, iconFor, page = 'games') {
 		}
 		const children = []
 		if (src) children.push({ type: 'avatar', src, alt: item.title, aspect: 1 })
-		children.push({ type: 'text', text: item.title, style: { weight: 'semibold', maxLines: 20 } })
+		children.push({ type: 'text', text: item.title.replace(/^(卡池|活动)/, kind => kind === '卡池' ? '✦ 卡池' : '⚑ 活动'), style: { weight: 'semibold', maxLines: 20 } })
 		if (item.trailing) children.push({ type: 'text', text: item.trailing, style: { maxLines: 20 } })
 		if (item.subtitle) children.push({ type: 'text', text: item.subtitle.replace(/ → /g, '\n至 '), tone: 'muted', style: { maxLines: 20 } })
 		if (item.action) children.push({ type: 'actions', items: [{ label: page === 'settings' ? item.title.startsWith('✓ ') ? '取消关注' : '关注游戏' : '查看详情', action: item.action }] })

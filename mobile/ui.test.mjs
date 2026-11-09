@@ -57,13 +57,20 @@ test('overview puts name, active count and joined fetch states to the right of o
 	const lines = row.children[0].children[1].children
 	assert.equal(lines[0].text, '崩坏：星穹铁道')
 	assert.equal(lines[1].text, '9项进行中')
-	assert.equal(lines[2].text, '卡池已读 · 活动已读')
+	assert.equal(lines[2].text, '✦ 卡池已读 · ⚑ 活动已读')
 	assert.equal(lines[0].style.size, 'body')
 	assert.equal(lines[1].style.size, 'caption')
 	assert.equal(lines[2].style.size, 'caption')
 	assert.ok(lines.every(node => node.type === 'text'))
 	assert.equal(lines[2].text.includes('\n'), false)
 	assert.equal(lines[0].style.maxLines, 20)
+})
+
+test('detail kind marks follow upstream star and pennant convention', () => {
+	const rows = gameRows([{ title: '卡池 · 当期限定' }, { title: '活动 · 周年庆典' }, { title: '活动来源' }], () => undefined, 'detail')
+	assert.equal(rows[0].children[0].text, '✦ 卡池 · 当期限定')
+	assert.equal(rows[1].children[0].text, '⚑ 活动 · 周年庆典')
+	assert.equal(rows[2].children[0].text, '⚑ 活动来源')
 })
 
 test('all 33 games remain reachable with wrapping cards and page bounds', async () => {

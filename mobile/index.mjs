@@ -1,6 +1,8 @@
 import { createEngine } from './core.mjs'
 import * as model from './model.mjs'
 import { createController, createStore, createTransport } from './runtime.mjs'
+import { calendarView } from './ui.mjs'
+import icons from './icons.mjs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
@@ -13,27 +15,17 @@ export function apply(ctx) {
 		function getController() {
 			if (!controllerPromise) controllerPromise = createStore(path).then(store => {
 				const transport = createTransport()
-				return createController({ engine: createEngine({ storage: store, transport }), store, transport, model })
+				return createController({ engine: createEngine({ storage: store, transport }), store, transport, model, icons })
 			}).catch(error => { controllerPromise = undefined; throw error })
 			return controllerPromise
 		}
 		ctx.dshGo.panel('calendar', {
-			view: () => ({ type: 'stack', title: '二游日历', children: [
-				{ type: 'text', text: { $: 'data.title' } },
-				{ type: 'text', text: { $: 'data.status' }, tone: 'muted' },
-				{ type: 'actions', items: [
-					{ label: '游戏列表', action: 'home', icon: 'list' },
-					{ label: '选择游戏', action: 'settings', icon: 'settings' },
-					{ label: '刷新', action: 'refresh', icon: 'refresh', style: 'primary' },
-				] },
-				{ type: 'list', items: { $: 'data.items' } },
-				{ type: 'text', text: { $: 'data.hint' }, tone: 'muted' },
-			] }),
+			view: (_scope, caps) => calendarView(caps),
 			data(scope, emit) {
 				let stopped = false, cancel
-				emit({ title: '二游日历', status: '正在读取缓存…', items: [], hint: '' })
+				emit({ title: '二游日历', status: '正在读取缓存…', items: [], imageRows: [], hint: '' })
 				getController().then(c => { if (!stopped) cancel = c.subscribe(scope, emit) }).catch(() => {
-					if (!stopped) emit({ title: '二游日历', status: '缓存无法读取，请检查存储空间。', items: [], hint: '' })
+					if (!stopped) emit({ title: '二游日历', status: '缓存无法读取，请检查存储空间。', items: [], imageRows: [], hint: '' })
 				})
 				return () => { stopped = true; cancel?.() }
 			},

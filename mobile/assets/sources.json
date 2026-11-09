@@ -1,0 +1,236 @@
+{
+  "notice": "游戏图标版权归原权利人所有。本目录图片逐字节取自上游原图地址，供原生日历识别游戏使用；不属于项目 MIT 代码授权。",
+  "entries": [
+    {
+      "id": "genshin",
+      "name": "原神",
+      "file": "genshin.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/b/b0/%E5%8E%9F%E7%A5%9E%E5%9B%BE%E6%A0%87.png!/fw/512",
+      "sha256": "b69a0329dc185f494f27c80cebe5999375df4170bf695bafbd959a73e81b5385"
+    },
+    {
+      "id": "hsr",
+      "name": "崩坏：星穹铁道",
+      "file": "hsr.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/3/38/HonkaiStarRailIcon_StartingVer3.6_CHN.png!/fw/512",
+      "sha256": "660cfe8b59ceac7242cae75ffa86bff622aa5d5e88d7c06b4bf00fa6b1558831"
+    },
+    {
+      "id": "zzz",
+      "name": "绝区零",
+      "file": "zzz.jpg",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/3/3e/ZZZ_miYoYo_logo.jpg!/fw/512",
+      "sha256": "fb3ed31930c2ae48808dfbc0a098b4578547e49415117595da0fc515858ce774"
+    },
+    {
+      "id": "bh3",
+      "name": "崩坏3",
+      "file": "bh3.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/b0/03/81/b003811c-f82a-428c-aa49-195f22c311bd/AppIcon-1x_U007emarketing-0-10-0-85-220-0.png/512x512bb.jpg",
+      "sha256": "4ca7ee88ff87aa37b1e3882287617ed12dbe154ddc2a173d573d9ea39dcf46cb"
+    },
+    {
+      "id": "wuwa",
+      "name": "鸣潮",
+      "file": "wuwa.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/2/29/WutheringWavesIcon.png!/fw/512",
+      "sha256": "91a0b5d50190f548e48d5c8598ad4b03a81fbfc60369a8c182b153c008cb9369"
+    },
+    {
+      "id": "arknights",
+      "name": "明日方舟",
+      "file": "arknights.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/4/41/ArknightsAppIcon.png!/fw/512",
+      "sha256": "acf118e51dda189b79951c336eb2e5995e5bfb108fa446f94d0596dad1a49842"
+    },
+    {
+      "id": "endfield",
+      "name": "明日方舟：终末地",
+      "file": "endfield.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/f/f1/ArknightsEndfieldAppIcon.png!/fw/512",
+      "sha256": "ed81de9b42c4373049bad865720352b1633eeadc0e12e4ccbae41a0ab56b274d"
+    },
+    {
+      "id": "ba-cn",
+      "name": "蔚蓝档案·国服",
+      "file": "ba-cn.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7c/4f/1a/7c4f1a51-59e5-977c-42e2-6c980485044a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "87fa6913bc33fd46f32805c55f9669c4cfe34c7daa1ebbe98ef4ceb4ee3d0fc6"
+    },
+    {
+      "id": "ba-global",
+      "name": "蔚蓝档案·国际服",
+      "file": "ba-global.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/2/25/AppIcon_Arona.png!/fw/512",
+      "sha256": "87b243eb56b50e6642c98d43898490556bfdd922b6dbcdd782097674727cd4d7"
+    },
+    {
+      "id": "ba-jp",
+      "name": "蔚蓝档案·日服",
+      "file": "ba-jp.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b2/83/84/b28384e9-b106-b48e-fc66-04679cd44d76/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "a19dcfe4162ff901fdfd8556d97429ae0b3c79efa83c05804d496b17eceaa108"
+    },
+    {
+      "id": "bandori",
+      "name": "BanG Dream！少女乐团派对·国服",
+      "file": "bandori.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cb/ae/11/cbae1132-58ee-8b5c-3016-dfd2f5e91e51/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "819020fa218d8cd80c04dfab89e7070c3feb0e098538169ba8749e75248db18b"
+    },
+    {
+      "id": "ournotes",
+      "name": "BanG Dream！OurNotes·日服",
+      "file": "ournotes.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bf/53/0f/bf530fd7-65e8-e875-0a46-720344af6134/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "4be874dd363f4b8d6d1c504756e57a63c02337caef11225dfccf279de473397e"
+    },
+    {
+      "id": "ournotes-global",
+      "name": "BanG Dream！OurNotes·国际服",
+      "file": "ournotes-global.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ca/da/3a/cada3a9a-491a-fbe5-5494-9be7390e3a9b/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "6de68e4815b0bf072370637dbdb6855b7b537af3c0f1356f143cf72a34fbd828"
+    },
+    {
+      "id": "wuhuamixin",
+      "name": "物华弥新",
+      "file": "wuhuamixin.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/13/7f/87/137f873a-f458-678d-347e-068830a74a69/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "a30888d26fbcf0254efdfb355657a3958794523f5d7d9f55867b5ae34bf16aaf"
+    },
+    {
+      "id": "zspms",
+      "name": "战双帕弥什",
+      "file": "zspms.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/b2/99/ed/b299ed39-90ea-03df-c7ee-bd09548991e5/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+      "sha256": "2ed0bcc01310abaa07ef1e4492823d809cefb50838387453bbd3792847cb2f68"
+    },
+    {
+      "id": "czn",
+      "name": "卡厄斯梦境",
+      "file": "czn.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e2/c9/48/e2c94812-11cd-2a52-445a-d67d6ae9e169/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+      "sha256": "0f274cad52cefc3bfa8d1057cd8211336b77d103dfb4bce5e543184fcf4b5c02"
+    },
+    {
+      "id": "kedr",
+      "name": "雪松",
+      "file": "kedr.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b5/8c/b6/b58cb6b2-4be3-0be0-852a-af761afaab06/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "b9b3766fd036685c62503548e2e3beb22e11d20605f70b7b67fc8c71cc597910"
+    },
+    {
+      "id": "ddlezj",
+      "name": "嘟嘟脸恶作剧",
+      "file": "ddlezj.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/64/f0/21/64f02145-182e-857a-133c-8de0151425d9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "33a51fbe610235821bd9b6e1146c50cea2e8f4b997e99c7140dfb2c820a009f7"
+    },
+    {
+      "id": "uma-cn",
+      "name": "闪耀！优俊少女",
+      "file": "uma-cn.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ca/23/bc/ca23bc1f-5dff-c21a-1881-66c48d02f5b2/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "344146334403369f33e2e3f37ad4f88d7acc29e32a5499f19adad1669a85d596"
+    },
+    {
+      "id": "uma-jp",
+      "name": "赛马娘·日服",
+      "file": "uma-jp.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/73/7c/0b/737c0b9b-6e90-8838-f0d3-fc7c576fbbad/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "92125160de8101341afa23533bfc63833bffefdff4281095c7453727ee3efeaa"
+    },
+    {
+      "id": "uma-global",
+      "name": "赛马娘·国际服",
+      "file": "uma-global.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/8f/35/f4/8f35f477-05cb-0058-944a-0b796ee42583/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "3614a57caeca8b0c80b3308c51d086dd1a26363bb22bcb284de2c8d0d73819c7"
+    },
+    {
+      "id": "p5x",
+      "name": "女神异闻录：夜幕魅影",
+      "file": "p5x.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/03/1e/f4/031ef49f-b3d0-5bdd-077b-67d213f99c86/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "8408f8a370da5eba1b8a0ea4e87e0f122a5420a78aee43dfbb87456e89c552a0"
+    },
+    {
+      "id": "nte",
+      "name": "异环",
+      "file": "nte.png",
+      "source": "https://storage.moegirl.org.cn/moegirl/commons/8/8c/YH_APP.png!/fw/512",
+      "sha256": "572caad85db9381861609cccff349a830da72d9f98ea50e8f7aa09079c8ef105"
+    },
+    {
+      "id": "gf2",
+      "name": "少女前线2：追放",
+      "file": "gf2.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6e/24/ac/6e24aca1-ce07-8fb9-41cd-181220b6cff2/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+      "sha256": "1879ec95a36f148f27d9df9b5e06f5dfb15372b1441d5c3283e68312175693cc"
+    },
+    {
+      "id": "fgo",
+      "name": "Fate/Grand Order",
+      "file": "fgo.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/db/d4/19/dbd4196a-68cb-8a74-ca0b-045d0795e10c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "c2425f46b8e95ca7bc761a7342be8606dcf79ec845a6ca21785d3f86050308fe"
+    },
+    {
+      "id": "pjsk",
+      "name": "初音未来：缤纷舞台·国服",
+      "file": "pjsk.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/00/5c/7c/005c7c99-d162-1dc9-2c38-f5e5a50619e1/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "c05387cce856a7565606ffbcb30f71b3be2dd7da18485856a16f2f82f85a5e49"
+    },
+    {
+      "id": "stellasora",
+      "name": "星塔旅人",
+      "file": "stellasora.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/54/82/12/548212d8-790c-241d-b11e-f588000cbaef/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "d5185c7903b8a7851bd5a9ebbd6d460de400efee17edcb8547e033153a2bad6c"
+    },
+    {
+      "id": "r1999",
+      "name": "重返未来：1999",
+      "file": "r1999.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/20/b1/e4/20b1e434-8c20-0346-a3aa-9051bf75a400/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "49dc28be5e0eacadcf0af0b941c8a4dff8fea028ce012a0bde9fc24beabc7b33"
+    },
+    {
+      "id": "wqmt",
+      "name": "无期迷途",
+      "file": "wqmt.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/16/c7/c7/16c7c783-035b-4014-2c23-f0af50d1a563/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+      "sha256": "94e792b9a7c8af724ab41d571d8af25be318a756c35e84bdb5b45ddea8f6f0d1"
+    },
+    {
+      "id": "pengpeng",
+      "name": "夜幕之下",
+      "file": "pengpeng.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/3f/59/95/3f599572-4d8c-f4f3-0270-1ee72e007926/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+      "sha256": "aa1249ba2236acd40256cadd2e089e8f3602f34aa96e186432fe10b48e371439"
+    },
+    {
+      "id": "wd",
+      "name": "未定事件簿",
+      "file": "wd.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/bd/c8/ad/bdc8ad3c-1bd5-debe-90b9-e67ea22578de/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+      "sha256": "13ce906a8f198baa9b309da2011ec2238a418f2f736adce1b958b62da0ce7b89"
+    },
+    {
+      "id": "hlr",
+      "name": "时空中的绘旅人",
+      "file": "hlr.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1d/2b/48/1d2b48c5-4cdd-ec4b-80a5-336e3574c6ca/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+      "sha256": "14aeb2ad6739f2945a969f3857ce523d5cbadf4c0010dd8287e538145c94e22c"
+    },
+    {
+      "id": "cytq",
+      "name": "炽焰天穹",
+      "file": "cytq.jpg",
+      "source": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dc/98/e4/dc98e45f-29eb-d517-0ebb-77e6867fd79f/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+      "sha256": "ca3d070a36ed40df2fd623cd1defc1ba5b329d45c8adcb7dcd5b8f4dc80a7862"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import { gameRows } from './ui.mjs'
 
 export const DEFAULT_GAMES = ['genshin', 'hsr', 'zzz', 'wuwa', 'arknights', 'r1999']
 
@@ -44,7 +45,7 @@ export function createTransport(fetcher = fetch) {
 	}
 }
 
-export function createController({ engine, store, transport, model, now = Date.now }) {
+export function createController({ engine, store, transport, model, icons = {}, now = Date.now }) {
 	const sessions = new Map()
 	let meta = [], result = { games: {}, refreshedAt: 0 }, busy = false, message = '', inFlight
 	const feeds = new Set()
@@ -86,8 +87,11 @@ export function createController({ engine, store, transport, model, now = Date.n
 			items = model.buildGameItems(meta, result, ids, now())
 			if (!ids.length) items = [{ title: '还没有关注游戏', subtitle: '点击「选择游戏」添加。' }]
 		}
+		const imageRows = s.page === 'detail'
+			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), { type: 'list', items }]
+			: gameRows(items, item => icons[item.action?.args?.id])
 		const summary = model.summarize(result, ids, now())
-		return { title, items, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
+		return { title, items, imageRows, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
 	}
 	async function publish() {
 		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], status: '日历读取失败，请检查存储空间。', hint: '' }) } }))

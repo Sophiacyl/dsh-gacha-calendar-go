@@ -17,6 +17,21 @@ export function gameRows(items, iconFor, page = 'games') {
 			return { type: 'stack', style: { card: 'plain', gap: 'S' }, children: [
 				content,
 				...(item.action ? [{ type: 'actions', items: [{ label: '查看详情', action: item.action }] }] : []),
+				{ type: 'divider' },
+			] }
+		}
+		if (page === 'settings') {
+			const followed = item.title.startsWith('✓ ')
+			const title = item.title.replace(/^[✓＋] /, '')
+			return { type: 'stack', style: { gap: 'S' }, children: [
+				{ type: 'row', style: { columns: [1, 1], gap: 'S', align: 'center' }, children: [
+					{ type: 'stack', style: { gap: 'S', align: 'start' }, children: [
+						...(src ? [{ type: 'avatar', src, alt: title, aspect: 1 }] : []),
+						{ type: 'text', text: title, style: { size: 'body', weight: 'medium', maxLines: 20 } },
+					] },
+					{ type: 'actions', items: item.action ? [{ label: followed ? '取消关注' : '关注', action: item.action }] : [] },
+				] },
+				{ type: 'divider' },
 			] }
 		}
 		const children = []

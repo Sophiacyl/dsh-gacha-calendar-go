@@ -37,7 +37,8 @@ test('original images accompany actionable rows; old app keeps working', () => {
 	assert.equal(row.style.card, 'plain')
 	assert.equal(content.children[1].children[0].text, original.title)
 	assert.equal(content.children[1].children[0].style.maxLines, 20)
-	assert.deepEqual(row.children.at(-1).items[0].action, original.action)
+	assert.deepEqual(row.children.at(-2).items[0].action, original.action)
+	assert.equal(row.children.at(-1).type, 'divider')
 	assert.equal(original.icon, 'calendar')
 	assert.equal(calendarView({ components: ['avatar'] }).v, 2)
 	assert.equal(calendarView({ components: ['list'] }).v, undefined)
@@ -101,6 +102,10 @@ test('long activity and game names use full-width text separate from deadline', 
 	assert.equal(row.style.card, 'outlined')
 	assert.ok(row.children.every(child => child.type === 'text'))
 	const selected = gameRows([{ title: '✓ ' + name, action: { id: 'toggle-game', args: { id: 'bandori' } } }], () => 'asset:bandori.jpg', 'settings')[0]
-	assert.equal(selected.children[1].text, '✓ ' + name)
-	assert.equal(selected.children.at(-1).items[0].label, '取消关注')
+	const selectionRow = selected.children[0]
+	assert.equal(selectionRow.type, 'row')
+	assert.equal(selectionRow.children[0].children[1].text, name)
+	assert.equal(selectionRow.children[1].items[0].label, '取消关注')
+	assert.deepEqual(selectionRow.children[1].items[0].action, { id: 'toggle-game', args: { id: 'bandori' } })
+	assert.equal(selected.children.at(-1).type, 'divider')
 })

@@ -4,17 +4,17 @@ export function gameRows(items, iconFor, page = 'games') {
 	return items.map(item => {
 		const src = iconFor(item)
 		if (page === 'games') {
-			const status = (item.subtitle || '').replace(/已读取排期/g, '已读取').replace(/来源连接失败/g, '连接失败').replace(/未匹配到当期内容/g, '暂无当期').replace(/\r?\n/g, ' · ')
+			const status = (item.subtitle || '').replace(/已读取排期/g, '已读').replace(/卡池：/g, '卡池').replace(/活动：/g, '活动').replace(/来源连接失败/g, '连接失败').replace(/未匹配到当期内容/g, '暂无当期').replace(/\r?\n/g, ' · ')
 			const lines = [
 				{ type: 'text', text: item.title, style: { size: 'body', weight: 'semibold', maxLines: 20 } },
 			]
 			if (item.trailing) lines.push({ type: 'text', text: item.trailing, style: { size: 'caption', maxLines: 20 } })
 			if (status) lines.push({ type: 'text', text: status, tone: 'muted', style: { size: 'caption', maxLines: 20 } })
-			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 4] } : {}) }, children: [
+			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 1] } : {}) }, children: [
 				...(src ? [{ type: 'avatar', src, alt: item.title, aspect: 1 }] : []),
 				{ type: 'stack', style: { gap: 'S', align: 'start' }, children: lines },
 			] }
-			return { type: 'stack', style: { card: 'outlined', gap: 'S', padding: 'S' }, children: [
+			return { type: 'stack', style: { card: 'plain', gap: 'S' }, children: [
 				content,
 				...(item.action ? [{ type: 'actions', items: [{ label: '查看详情', action: item.action }] }] : []),
 			] }

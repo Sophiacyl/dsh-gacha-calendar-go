@@ -27,7 +27,13 @@ test('original images accompany actionable rows; old app keeps working', () => {
 	const content = row.children[0]
 	assert.equal(content.children[0].src, 'asset:genshin.png')
 	assert.equal(content.type, 'row')
-	assert.deepEqual(content.style.columns, [1, 4])
+	assert.deepEqual(content.style.columns, [1, 1])
+	// App renderer requires every weighted column >=136dp. Screenshot gives
+	// about 280dp of usable width: 1:4 collapses, 1:1 with an 8dp gap fits.
+	const fits = (weights, width) => weights.every(w => (width - 8) * w / weights.reduce((a, b) => a + b, 0) >= 136)
+	assert.equal(fits([1, 4], 280), false)
+	assert.equal(fits(content.style.columns, 280), true)
+	assert.equal(row.style.card, 'plain')
 	assert.equal(content.children[1].children[0].text, original.title)
 	assert.equal(content.children[1].children[0].style.maxLines, 20)
 	assert.deepEqual(row.children.at(-1).items[0].action, original.action)
@@ -41,7 +47,7 @@ test('overview puts name, active count and joined fetch states to the right of o
 	const lines = row.children[0].children[1].children
 	assert.equal(lines[0].text, '崩坏：星穹铁道')
 	assert.equal(lines[1].text, '9项进行中')
-	assert.equal(lines[2].text, '卡池：已读取 · 活动：已读取')
+	assert.equal(lines[2].text, '卡池已读 · 活动已读')
 	assert.equal(lines[0].style.size, 'body')
 	assert.equal(lines[1].style.size, 'caption')
 	assert.equal(lines[2].style.size, 'caption')

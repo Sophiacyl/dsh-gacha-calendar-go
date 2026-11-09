@@ -61,6 +61,9 @@ test('overview puts name, active count and joined fetch states to the right of o
 	assert.equal(lines[0].style.size, 'body')
 	assert.equal(lines[1].style.size, 'caption')
 	assert.equal(lines[2].style.size, 'caption')
+	assert.equal(lines[2].spans.find(span => span.text === '✦ 卡池').color, 'indigo')
+	assert.equal(lines[2].spans.find(span => span.text === '⚑ 活动').color, 'teal')
+	assert.equal(lines[2].spans.map(span => span.text).join(''), lines[2].text)
 	assert.ok(lines.every(node => node.type === 'text'))
 	assert.equal(lines[2].text.includes('\n'), false)
 	assert.equal(lines[0].style.maxLines, 20)
@@ -71,6 +74,8 @@ test('detail kind marks follow upstream star and pennant convention', () => {
 	assert.equal(rows[0].children[0].text, '✦ 卡池 · 当期限定')
 	assert.equal(rows[1].children[0].text, '⚑ 活动 · 周年庆典')
 	assert.equal(rows[2].children[0].text, '⚑ 活动来源')
+	assert.equal(rows[0].children[0].style.color, 'indigo')
+	assert.equal(rows[1].children[0].style.color, 'teal')
 })
 
 test('all 33 games remain reachable with wrapping cards and page bounds', async () => {

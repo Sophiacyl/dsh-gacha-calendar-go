@@ -2,6 +2,10 @@
 export const PAGE_SIZE = 8
 // Upstream scheduleKindIcon: four-point star (gacha), pennant (event).
 const withKindMark = value => value.replace(/卡池/g, '✦ 卡池').replace(/活动/g, '⚑ 活动')
+const KIND_COLORS = { '卡池': 'indigo', '活动': 'teal' }
+function kindSpans(value) {
+	return value.split(/(✦ 卡池|⚑ 活动)/).filter(Boolean).map(text => ({ text, ...(/^[✦⚑] /.test(text) ? { color: text.startsWith('✦') ? KIND_COLORS.卡池 : KIND_COLORS.活动, weight: 'semibold' } : {}) }))
+}
 export function gameRows(items, iconFor, page = 'games') {
 	return items.map(item => {
 		const src = iconFor(item)
@@ -11,7 +15,7 @@ export function gameRows(items, iconFor, page = 'games') {
 				{ type: 'text', text: item.title, style: { size: 'body', weight: 'semibold', maxLines: 20 } },
 			]
 			if (item.trailing) lines.push({ type: 'text', text: item.trailing, style: { size: 'caption', maxLines: 20 } })
-			if (status) lines.push({ type: 'text', text: withKindMark(status), tone: 'muted', style: { size: 'caption', maxLines: 20 } })
+			if (status) lines.push({ type: 'text', text: withKindMark(status), spans: kindSpans(withKindMark(status)), tone: 'muted', style: { size: 'caption', maxLines: 20 } })
 			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 1] } : {}) }, children: [
 				...(src ? [{ type: 'stack', style: { align: 'end' }, children: [{ type: 'avatar', src, alt: item.title, aspect: 1 }] }] : []),
 				{ type: 'stack', style: { gap: 'S', align: 'start' }, children: lines },
@@ -38,7 +42,8 @@ export function gameRows(items, iconFor, page = 'games') {
 		}
 		const children = []
 		if (src) children.push({ type: 'avatar', src, alt: item.title, aspect: 1 })
-		children.push({ type: 'text', text: item.title.replace(/^(卡池|活动)/, kind => kind === '卡池' ? '✦ 卡池' : '⚑ 活动'), style: { weight: 'semibold', maxLines: 20 } })
+		const kind = item.title.match(/^(卡池|活动)/)?.[1]
+		children.push({ type: 'text', text: item.title.replace(/^(卡池|活动)/, kind => kind === '卡池' ? '✦ 卡池' : '⚑ 活动'), style: { weight: 'semibold', maxLines: 20, ...(kind ? { color: KIND_COLORS[kind] } : {}) } })
 		if (item.trailing) children.push({ type: 'text', text: item.trailing, style: { maxLines: 20 } })
 		if (item.subtitle) children.push({ type: 'text', text: item.subtitle.replace(/ → /g, '\n至 '), tone: 'muted', style: { maxLines: 20 } })
 		if (item.action) children.push({ type: 'actions', items: [{ label: page === 'settings' ? item.title.startsWith('✓ ') ? '取消关注' : '关注游戏' : '查看详情', action: item.action }] })

@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import { gameRows } from './ui.mjs'
+import { gameRows, PAGE_SIZE } from './ui.mjs'
 
 export const DEFAULT_GAMES = ['genshin', 'hsr', 'zzz', 'wuwa', 'arknights', 'r1999']
 
@@ -68,7 +68,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 				const inactive = [...sessions.keys()].find(k => ![...feeds].some(f => (f.scope.sessionId || 'global') === k))
 				if (inactive) sessions.delete(inactive)
 			}
-			sessions.set(key, { page: 'games', game: null })
+			sessions.set(key, { page: 'games', game: null, pageIndex: 0 })
 		}
 		return sessions.get(key)
 	}
@@ -87,11 +87,15 @@ export function createController({ engine, store, transport, model, icons = {}, 
 			items = model.buildGameItems(meta, result, ids, now())
 			if (!ids.length) items = [{ title: '还没有关注游戏', subtitle: '点击「选择游戏」添加。' }]
 		}
+		const total = items.length, pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+		s.pageIndex = Math.max(0, Math.min(s.pageIndex, pageCount - 1))
+		items = items.slice(s.pageIndex * PAGE_SIZE, (s.pageIndex + 1) * PAGE_SIZE)
 		const imageRows = s.page === 'detail'
-			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), { type: 'list', items }]
-			: gameRows(items, item => icons[item.action?.args?.id])
+			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), ...gameRows(items, () => undefined, 'detail')]
+			: gameRows(items, item => icons[item.action?.args?.id], s.page)
+		const pageLabel = `第 ${s.pageIndex + 1} / ${pageCount} 页 · 共 ${total} 项`
 		const summary = model.summarize(result, ids, now())
-		return { title, items, imageRows, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
+		return { title, items, imageRows, pageLabel, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
 	}
 	async function publish() {
 		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], status: '日历读取失败，请检查存储空间。', hint: '' }) } }))
@@ -126,9 +130,11 @@ export function createController({ engine, store, transport, model, icons = {}, 
 			return () => { feeds.delete(feed); if (!feeds.size) { clearInterval(tick); tick = null } }
 		},
 		actions: {
-			async home(scope) { state(scope).page = 'games'; await publish(); return {} },
-			async settings(scope) { state(scope).page = 'settings'; await publish(); return {} },
-			async 'select-game'(scope, event) { await ready; if (!meta.some(g => g.id === event.value?.id)) return { toast: '游戏不存在。' }; Object.assign(state(scope), { page: 'detail', game: event.value.id }); await publish(); return {} },
+			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(); return {} },
+			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(); return {} },
+			async 'previous-page'(scope) { state(scope).pageIndex--; await publish(); return {} },
+			async 'next-page'(scope) { state(scope).pageIndex++; await publish(); return {} },
+			async 'select-game'(scope, event) { await ready; if (!meta.some(g => g.id === event.value?.id)) return { toast: '游戏不存在。' }; Object.assign(state(scope), { page: 'detail', game: event.value.id, pageIndex: 0 }); await publish(); return {} },
 			async 'toggle-game'(scope, event) {
 				await ready
 				if (busy) return { toast: '请等刷新结束后再修改。' }

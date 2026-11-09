@@ -1,22 +1,22 @@
-// Keep upstream game artwork. Native list.icon accepts names only, so pair each
-// ordinary native list row with a real avatar image instead of inventing an icon.
-export function gameRows(items, iconFor) {
-	const rows = items.map(item => {
+// Full-width wrapping titles keep dates and actions from squeezing game names.
+export const PAGE_SIZE = 8
+export function gameRows(items, iconFor, page = 'games') {
+	return items.map(item => {
 		const src = iconFor(item)
-		const { icon, ...original } = item
-		return src ? { type: 'row', children: [
-			{ type: 'avatar', src, alt: item.title, aspect: 1 },
-			{ type: 'list', items: [original] },
-		] } : { type: 'list', items: [item] }
+		const children = []
+		if (src) children.push({ type: 'avatar', src, alt: item.title, aspect: 1 })
+		children.push({ type: 'text', text: item.title, style: { weight: 'semibold', maxLines: 20 } })
+		if (item.trailing) children.push({ type: 'text', text: item.trailing, style: { maxLines: 20 } })
+		if (item.subtitle) children.push({ type: 'text', text: item.subtitle.replace(/ → /g, '\n至 '), tone: 'muted', style: { maxLines: 20 } })
+		if (item.action) children.push({ type: 'actions', items: [{ label: page === 'settings' ? item.title.startsWith('✓ ') ? '取消关注' : '关注游戏' : '查看详情', action: item.action }] })
+		return { type: 'stack', style: { card: 'outlined', gap: 'S' }, children }
 	})
-	// Native containers show at most 32 children; grouping preserves all 33 games.
-	return rows.length <= 24 ? rows : Array.from({ length: Math.ceil(rows.length / 24) }, (_, index) => ({ type: 'stack', children: rows.slice(index * 24, (index + 1) * 24) }))
 }
 
 export function calendarView(caps = {}) {
 	const images = caps.components?.includes('avatar') === true
 	return { ...(images ? { v: 2 } : {}), type: 'stack', title: '二游日历', children: [
-		{ type: 'text', text: { $: 'data.title' } },
+		{ type: 'text', text: { $: 'data.title' }, ...(images ? { style: { weight: 'semibold', maxLines: 20 } } : {}) },
 		{ type: 'text', text: { $: 'data.status' }, tone: 'muted' },
 		{ type: 'actions', items: [
 			{ label: '游戏列表', action: 'home', icon: 'list' },
@@ -24,6 +24,8 @@ export function calendarView(caps = {}) {
 			{ label: '刷新', action: 'refresh', icon: 'refresh', ...(images ? {} : { style: 'primary' }) },
 		] },
 		images ? { type: 'stack', children: { $: 'data.imageRows' } } : { type: 'list', items: { $: 'data.items' } },
+		{ type: 'text', text: { $: 'data.pageLabel' }, tone: 'muted' },
+		{ type: 'actions', items: [ { label: '上一页', action: 'previous-page' }, { label: '下一页', action: 'next-page' } ] },
 		{ type: 'text', text: { $: 'data.hint' }, tone: 'muted' },
 	] }
 }

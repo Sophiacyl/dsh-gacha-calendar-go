@@ -29,7 +29,7 @@ export function apply(ctx) {
 				})
 				return () => { stopped = true; cancel?.() }
 			},
-			actions: Object.fromEntries(['home', 'settings', 'select-game', 'toggle-game', 'refresh'].map(id => [id, async (scope, event) => {
+			actions: Object.fromEntries(['home', 'settings', 'select-game', 'toggle-game', 'refresh', 'previous-page', 'next-page'].map(id => [id, async (scope, event) => {
 				try { const c = await getController(); return await c.actions[id](scope, event) }
 				catch { return { toast: '日历暂时不可用，请检查存储空间。' } }
 			}])),

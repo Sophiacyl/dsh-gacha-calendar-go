@@ -6,7 +6,15 @@ import { createEngine } from '../packages/core/core.mjs'
 import { calendarView, gameRows } from './ui.mjs'
 import { createController } from './runtime.mjs'
 import * as model from './model.mjs'
-import { checkView } from '/root/.dsh/skills/dsh-go-plugin/kit/lib/view-check.js'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+let checkView
+try {
+	({ checkView } = await import(pathToFileURL(join(process.env.DSH_HOME || join(homedir(), '.dsh'), 'skills/dsh-go-plugin/kit/lib/view-check.js')).href))
+} catch (error) {
+	if (error.code !== 'ERR_MODULE_NOT_FOUND' && error.code !== 'ENOENT') throw error
+}
 
 test('all original icons match upstream URL and downloaded SHA256', async () => {
 	const sources = JSON.parse(await readFile(new URL('./assets/sources.json', import.meta.url), 'utf8'))
@@ -83,9 +91,11 @@ test('all 33 games remain reachable with wrapping cards and page bounds', async 
 	const view = calendarView({ components: ['avatar'] })
 	view.children[0].text = data.title; view.children[1].text = data.status
 	view.children[3].children = data.imageRows; view.children[4].text = data.pageLabel; view.children[6].text = data.hint
-	const checked = checkView(view, { budget: 'panel' })
-	assert.equal(checked.fatal, false, JSON.stringify(checked))
-	assert.deepEqual(checked.issues.filter(issue => issue.path !== 'view.accent'), [])
+	if (checkView) {
+		const checked = checkView(view, { budget: 'panel' })
+		assert.equal(checked.fatal, false, JSON.stringify(checked))
+		assert.deepEqual(checked.issues.filter(issue => issue.path !== 'view.accent'), [])
+	}
 	await c.actions['select-game']({}, { value: { id: 'hsr' } })
 	data = await c.snapshot({})
 	assert.equal(data.imageRows[0].src, icons.hsr)

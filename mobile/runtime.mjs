@@ -68,7 +68,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 				const inactive = [...sessions.keys()].find(k => ![...feeds].some(f => (f.scope.sessionId || 'global') === k))
 				if (inactive) sessions.delete(inactive)
 			}
-			sessions.set(key, { page: 'games', game: null, pageIndex: 0 })
+			sessions.set(key, { page: 'games', game: null, pageIndex: 0, search: '' })
 		}
 		return sessions.get(key)
 	}
@@ -78,7 +78,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		let title = '二游日历', items
 		if (s.page === 'settings') {
 			title = '选择关注的游戏'
-			items = meta.map(g => ({ title: `${ids.includes(g.id) ? '✓ ' : '＋ '}${g.name}`, subtitle: ids.includes(g.id) ? '已关注 · 点击取消' : '未关注 · 点击添加', action: { id: 'toggle-game', args: { id: g.id } } }))
+			items = meta.filter(g => `${g.name} ${g.id}`.toLocaleLowerCase().includes(s.search.trim().toLocaleLowerCase())).map(g => ({ title: `${ids.includes(g.id) ? '✓ ' : '＋ '}${g.name}`, subtitle: ids.includes(g.id) ? '已关注 · 点击取消' : '未关注 · 点击添加', action: { id: 'toggle-game', args: { id: g.id } } }))
 		} else if (s.page === 'detail' && meta.some(g => g.id === s.game)) {
 			const g = meta.find(g => g.id === s.game)
 			title = g.name
@@ -93,9 +93,12 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		const imageRows = s.page === 'detail'
 			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), ...gameRows(items, () => undefined, 'detail')]
 			: gameRows(items, item => icons[item.action?.args?.id], s.page)
+		if (s.page === 'settings' && total === 0) imageRows.push({ type: 'text', text: '没有匹配的游戏，试试其他名称。', tone: 'muted' })
+		const searchRows = s.page === 'settings' ? [{ type: 'textField', label: '搜索', placeholder: '游戏名称', bind: 'data.search', value: s.search, maxLength: 80, multiline: false, maxLines: 1, onChange: 'search-games' }] : []
+		imageRows.unshift(...searchRows)
 		const pageLabel = `第 ${s.pageIndex + 1} / ${pageCount} 页 · 共 ${total} 项`
 		const summary = model.summarize(result, ids, now())
-		return { title, items, imageRows, pageLabel, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
+		return { title, items, imageRows, searchRows, search: s.search, pageLabel, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
 	}
 	async function publish() {
 		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], status: '日历读取失败，请检查存储空间。', hint: '' }) } }))
@@ -132,6 +135,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		actions: {
 			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(); return {} },
 			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(); return {} },
+			async 'search-games'(scope, event) { const s = state(scope); s.search = typeof event.value?.value === 'string' ? event.value.value.slice(0, 80) : ''; s.pageIndex = 0; await publish(); return {} },
 			async 'previous-page'(scope) { state(scope).pageIndex--; await publish(); return {} },
 			async 'next-page'(scope) { state(scope).pageIndex++; await publish(); return {} },
 			async 'select-game'(scope, event) { await ready; if (!meta.some(g => g.id === event.value?.id)) return { toast: '游戏不存在。' }; Object.assign(state(scope), { page: 'detail', game: event.value.id, pageIndex: 0 }); await publish(); return {} },

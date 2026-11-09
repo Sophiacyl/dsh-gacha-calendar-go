@@ -24,12 +24,13 @@ test('all original icons match upstream URL and downloaded SHA256', async () => 
 test('original images accompany actionable rows; old app keeps working', () => {
 	const original = { title: '原神', icon: 'calendar', action: { id: 'select-game', args: { id: 'genshin' } } }
 	const row = gameRows([original], () => 'asset:genshin.png')[0]
-	assert.equal(row.children[0].src, 'asset:genshin.png')
-	assert.equal(row.type, 'row')
-	assert.deepEqual(row.style.columns, [1, 4])
-	assert.equal(row.children[1].children[0].text, original.title)
-	assert.equal(row.children[1].children[0].style.maxLines, 20)
-	assert.deepEqual(row.children[1].children.at(-1).items[0].action, original.action)
+	const content = row.children[0]
+	assert.equal(content.children[0].src, 'asset:genshin.png')
+	assert.equal(content.type, 'row')
+	assert.deepEqual(content.style.columns, [1, 4])
+	assert.equal(content.children[1].children[0].text, original.title)
+	assert.equal(content.children[1].children[0].style.maxLines, 20)
+	assert.deepEqual(row.children.at(-1).items[0].action, original.action)
 	assert.equal(original.icon, 'calendar')
 	assert.equal(calendarView({ components: ['avatar'] }).v, 2)
 	assert.equal(calendarView({ components: ['list'] }).v, undefined)
@@ -37,10 +38,14 @@ test('original images accompany actionable rows; old app keeps working', () => {
 
 test('overview puts name, active count and joined fetch states to the right of original icon', () => {
 	const row = gameRows([{ title: '崩坏：星穹铁道', trailing: '9项进行中', subtitle: '卡池：已读取排期\n活动：已读取排期' }], () => 'asset:hsr.png')[0]
-	const lines = row.children[1].children
+	const lines = row.children[0].children[1].children
 	assert.equal(lines[0].text, '崩坏：星穹铁道')
 	assert.equal(lines[1].text, '9项进行中')
-	assert.equal(lines[2].text, '卡池：已读取排期 ／ 活动：已读取排期')
+	assert.equal(lines[2].text, '卡池：已读取 · 活动：已读取')
+	assert.equal(lines[0].style.size, 'body')
+	assert.equal(lines[1].style.size, 'caption')
+	assert.equal(lines[2].style.size, 'caption')
+	assert.ok(lines.every(node => node.type === 'text'))
 	assert.equal(lines[2].text.includes('\n'), false)
 	assert.equal(lines[0].style.maxLines, 20)
 })

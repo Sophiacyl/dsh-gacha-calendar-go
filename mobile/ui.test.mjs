@@ -25,7 +25,8 @@ test('original images accompany actionable rows; old app keeps working', () => {
 	const original = { title: '原神', icon: 'calendar', action: { id: 'select-game', args: { id: 'genshin' } } }
 	const row = gameRows([original], () => 'asset:genshin.png')[0]
 	const content = row.children[0]
-	assert.equal(content.children[0].src, 'asset:genshin.png')
+	assert.equal(content.children[0].children[0].src, 'asset:genshin.png')
+	assert.equal(content.children[0].style.align, 'end')
 	assert.equal(content.type, 'row')
 	assert.deepEqual(content.style.columns, [1, 1])
 	// App renderer requires every weighted column >=136dp. Screenshot gives

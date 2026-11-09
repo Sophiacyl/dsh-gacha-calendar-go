@@ -11,7 +11,7 @@ export function gameRows(items, iconFor, page = 'games') {
 			if (item.trailing) lines.push({ type: 'text', text: item.trailing, style: { size: 'caption', maxLines: 20 } })
 			if (status) lines.push({ type: 'text', text: status, tone: 'muted', style: { size: 'caption', maxLines: 20 } })
 			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 1] } : {}) }, children: [
-				...(src ? [{ type: 'avatar', src, alt: item.title, aspect: 1 }] : []),
+				...(src ? [{ type: 'stack', style: { align: 'end' }, children: [{ type: 'avatar', src, alt: item.title, aspect: 1 }] }] : []),
 				{ type: 'stack', style: { gap: 'S', align: 'start' }, children: lines },
 			] }
 			return { type: 'stack', style: { card: 'plain', gap: 'S' }, children: [

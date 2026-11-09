@@ -25,12 +25,24 @@ test('original images accompany actionable rows; old app keeps working', () => {
 	const original = { title: '原神', icon: 'calendar', action: { id: 'select-game', args: { id: 'genshin' } } }
 	const row = gameRows([original], () => 'asset:genshin.png')[0]
 	assert.equal(row.children[0].src, 'asset:genshin.png')
-	assert.equal(row.children[1].text, original.title)
-	assert.equal(row.children[1].style.maxLines, 20)
-	assert.deepEqual(row.children.at(-1).items[0].action, original.action)
+	assert.equal(row.type, 'row')
+	assert.deepEqual(row.style.columns, [1, 4])
+	assert.equal(row.children[1].children[0].text, original.title)
+	assert.equal(row.children[1].children[0].style.maxLines, 20)
+	assert.deepEqual(row.children[1].children.at(-1).items[0].action, original.action)
 	assert.equal(original.icon, 'calendar')
 	assert.equal(calendarView({ components: ['avatar'] }).v, 2)
 	assert.equal(calendarView({ components: ['list'] }).v, undefined)
+})
+
+test('overview puts name, active count and joined fetch states to the right of original icon', () => {
+	const row = gameRows([{ title: '崩坏：星穹铁道', trailing: '9项进行中', subtitle: '卡池：已读取排期\n活动：已读取排期' }], () => 'asset:hsr.png')[0]
+	const lines = row.children[1].children
+	assert.equal(lines[0].text, '崩坏：星穹铁道')
+	assert.equal(lines[1].text, '9项进行中')
+	assert.equal(lines[2].text, '卡池：已读取排期 ／ 活动：已读取排期')
+	assert.equal(lines[2].text.includes('\n'), false)
+	assert.equal(lines[0].style.maxLines, 20)
 })
 
 test('all 33 games remain reachable with wrapping cards and page bounds', async () => {
@@ -71,12 +83,10 @@ test('long activity and game names use full-width text separate from deadline', 
 	assert.equal(row.type, 'stack')
 	assert.equal(row.children[0].text, name)
 	assert.equal(row.children[0].style.maxLines, 20)
-	assert.ok(row.children[1].text.startsWith('剩余30天\n'))
-	assert.ok(row.children[1].text.includes('\n至 '))
-	assert.equal(row.children[0].style.size, 'body')
-	assert.equal(row.children[1].style.size, 'caption')
-	assert.equal(row.style.card, 'plain')
-	assert.equal(row.style.padding, 'S')
+	assert.equal(row.children[1].text, '剩余30天')
+	assert.ok(row.children[2].text.includes('\n至 '))
+	assert.equal(row.children[0].style.size, undefined)
+	assert.equal(row.style.card, 'outlined')
 	assert.ok(row.children.every(child => child.type === 'text'))
 	const selected = gameRows([{ title: '✓ ' + name, action: { id: 'toggle-game', args: { id: 'bandori' } } }], () => 'asset:bandori.jpg', 'settings')[0]
 	assert.equal(selected.children[1].text, '✓ ' + name)

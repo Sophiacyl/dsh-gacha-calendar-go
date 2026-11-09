@@ -14,7 +14,9 @@ node mobile/build.mjs
 node "$HOME/.dsh/skills/dsh-go-plugin/kit/bin/check.mjs" dist/mobile --load
 ```
 
-`mobile/build.mjs` 复制上游生成的 core.mjs 与手机真源，生成独立包 `local-gacha-calendar-go`。生成包沿用根版本号，设置 private，不包含发布脚本；打包时保留原 LICENSE。
+`mobile/build.mjs` 默认复制上游生成的 core.mjs 与手机真源，生成独立本地包 `local-gacha-calendar-go`。本地包沿用根版本号，设置 private，不包含发布脚本；打包时保留原 LICENSE。
+
+显式执行 `node mobile/build.mjs --publish` 时，生成 `dist/npm/` 下的公开包 `dsh-gacha-calendar-go`，包含独立包名、仓库链接、明确 files 白名单与最小 App 版本 1.0.13。此命令仅构建，发布需单独执行 npm publish 并完成账号验证。公开包缓存目录为 `$DSH_HOME/dsh-go/data/dsh-gacha-calendar-go/`，不自动迁移本地包缓存；两者并装会出现两个入口，切换前可先停用本地包。
 
 手机本机安装：
 

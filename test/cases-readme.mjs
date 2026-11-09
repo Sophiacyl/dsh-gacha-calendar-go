@@ -75,15 +75,13 @@ export default function runReadme() {
 		check("test/README.md 的段数与 all.mjs 实际段数一致", b === actual, `test/README=${b} 实际=${actual}`);
 	}
 
-	// ⑤ 「自动刷新」那一条必须写清新频率口径（2026-10-31 用户批准的唯一一行改动）
-	// 为什么守：出厂默认从「1~42 天」改成「启动时 / 1~42 天」，用户版 README 若还写着旧的
-	// 「按设置间隔（1~42 天）」，新用户会以为没有「启动时」这一档 —— 而且这行是**用户看的那份**
-	// 文档里唯一说明刷新周期的地方（AGENTS.md：README.md 的改动必须经用户审批，所以文案要钉死）。
+	// ⑤ 手机分支 README 必须准确说明手动刷新和当前能力边界。
+	// 用户已审阅并批准手机版 README；不能继续要求桌面端自动刷新文案。
 	{
-		const NEW_LINE = "- **自动刷新**：按设置频率（启动时 / 1~42 天）进行自动刷新，间隔从**上次成功刷新**起算";
-		const OLD_LINE = "按设置间隔（1~42 天）";
-		check("README.md 里有「自动刷新」那一行（逐字，含粗体与标点）", readme.includes(NEW_LINE),
-			readme.split("\n").filter((l) => l.includes("自动刷新")).slice(0, 2).join(" ⏎ ").slice(0, 200));
-		check("README.md 里不再出现旧说法「" + OLD_LINE + "」", !readme.includes(OLD_LINE));
+		check("手机版 README 写明点击刷新才联网及优先读取缓存",
+			readme.includes("**手动刷新**：仅在点击刷新时联网；打开面板先读取本地缓存。"));
+		check("手机版 README 明确未提供后台自动刷新且倒计时不会触发联网",
+			readme.includes("## 当前边界") && readme.includes("- 后台自动刷新。") &&
+			readme.includes("**不会因此自动联网刷新排期**") && !readme.includes("- **自动刷新**："));
 	}
 }

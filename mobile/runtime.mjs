@@ -92,9 +92,9 @@ export function createController({ engine, store, transport, model, icons = {}, 
 			items = model.buildGameItems(meta, result, ids, now())
 			if (!ids.length) items = [{ title: '还没有关注游戏', subtitle: '点击「选择游戏」添加。' }]
 		}
-		const total = items.length, pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+		const total = items.length, pageCount = s.page === 'settings' ? 1 : Math.max(1, Math.ceil(total / PAGE_SIZE))
 		s.pageIndex = Math.max(0, Math.min(s.pageIndex, pageCount - 1))
-		items = items.slice(s.pageIndex * PAGE_SIZE, (s.pageIndex + 1) * PAGE_SIZE)
+		if (s.page !== 'settings') items = items.slice(s.pageIndex * PAGE_SIZE, (s.pageIndex + 1) * PAGE_SIZE)
 		const imageRows = s.page === 'detail'
 			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), ...gameRows(items, () => undefined, 'detail')]
 			: gameRows(items, item => icons[item.action?.args?.id], s.page)
@@ -102,8 +102,19 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		if (s.page === 'detail') imageRows.unshift({ type: 'actions', items: [{ label: '返回游戏', action: 'home', icon: 'list' }] })
 		if (s.page === 'settings' && total === 0) imageRows.push({ type: 'text', text: '没有匹配的游戏，试试其他名称。', tone: 'muted' })
 		const searchRows = s.page === 'settings' ? [{ type: 'textField', label: '搜索', placeholder: '游戏名称', bind: 'data.search', value: s.search, maxLength: 80, multiline: false, maxLines: 1, onChange: 'search-games' }] : []
+		if (s.page === 'settings') {
+			// Native views allow 32 inputs total (including search) and 32 children per container.
+			const overflow = items.slice(30)
+			imageRows.splice(30)
+			if (overflow.length) imageRows.push({ type: 'list', items: overflow.map(item => ({ title: item.title, subtitle: item.title.startsWith('✓ ') ? '已关注 · 点击取消' : '点击关注', action: item.action })) })
+			if (imageRows.length > 24) {
+				const groups = []
+				for (let i = 0; i < imageRows.length; i += 24) groups.push({ type: 'stack', style: { gap: 'S' }, children: imageRows.slice(i, i + 24) })
+				imageRows.splice(0, imageRows.length, ...groups)
+			}
+		}
 		imageRows.unshift(...searchRows)
-		const pageLabel = `第 ${s.pageIndex + 1} / ${pageCount} 页 · 共 ${total} 项`
+		const pageLabel = s.page === 'settings' ? `共 ${total} 款游戏` : `第 ${s.pageIndex + 1} / ${pageCount} 页 · 共 ${total} 项`
 		const summary = model.summarize(result, ids, now())
 		const pageActions = pageCount > 1 ? [ ...(s.pageIndex > 0 ? [{ label: '上一页', action: 'previous-page' }] : []), ...(s.pageIndex < pageCount - 1 ? [{ label: '下一页', action: 'next-page' }] : []) ] : []
 		const status = busy ? '正在刷新，请稍候…' : message || (s.page === 'recent' ? `24h内 ${recent.soonCount} 项 · 7天内 ${recent.weekCount} 项` : typeof summary === 'string' ? summary : summary.lastRefreshText)

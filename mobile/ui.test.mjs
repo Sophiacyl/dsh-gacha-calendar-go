@@ -70,6 +70,9 @@ test('native protocol, 33-game search, page limits and recent navigation work', 
 	await c.ready
 	assert.equal((await c.snapshot({})).navigation, 'recent')
 	await c.actions.settings({})
+	assert.equal((await c.snapshot({})).items.length, 33)
+	assert.equal((await c.snapshot({})).pageActions.length, 0)
+	assert.equal((await c.snapshot({})).pageLabel, '共 33 款游戏')
 	const seen = new Set()
 	for (let p = 0; p < 5; p++) {
 		const data = await c.snapshot({})

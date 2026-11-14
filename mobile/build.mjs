@@ -8,6 +8,7 @@ const target = process.argv.slice(2).find(arg => !arg.startsWith('--'))
 const out = resolve(target || join(root, publish ? 'dist/npm' : 'dist/mobile'))
 const packageName = publish ? 'dsh-gacha-calendar-go' : 'local-gacha-calendar-go'
 const upstream = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
+const release = JSON.parse(await readFile(join(root, 'mobile/release.json'), 'utf8'))
 await mkdir(join(out, 'lib'), { recursive: true })
 for (const name of ['index.mjs', 'runtime.mjs', 'model.mjs', 'ui.mjs', 'recent.mjs']) {
 	if (publish && name === 'index.mjs') {
@@ -24,7 +25,7 @@ for (const entry of icons.entries) await copyFile(join(root, 'mobile/assets', en
 await copyFile(join(root, 'mobile/assets/sources.json'), join(out, 'assets/sources.json'))
 await writeFile(join(out, 'lib/icons.mjs'), `export default ${JSON.stringify(Object.fromEntries(icons.entries.map(e => [e.id, 'asset:' + e.file])))}\n`)
 await writeFile(join(out, 'package.json'), JSON.stringify({
-	name: packageName, version: upstream.version, ...(!publish ? { private: true } : { publishConfig: { access: 'public', registry: 'https://registry.npmjs.org/' } }), type: 'module', main: 'lib/index.mjs',
+	name: packageName, version: release.version, ...(!publish ? { private: true } : { publishConfig: { access: 'public', registry: 'https://registry.npmjs.org/' } }), type: 'module', main: 'lib/index.mjs',
 	files: ['lib/', 'assets/', 'cordis.patch.yml', 'README.md', 'LICENSE'],
 	homepage: 'https://github.com/Sophiacyl/dsh-gacha-calendar-go',
 	bugs: { url: 'https://github.com/Sophiacyl/dsh-gacha-calendar-go/issues' },

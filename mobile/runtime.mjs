@@ -142,7 +142,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		},
 		actions: {
 			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); return { patch: await snapshot(scope) } },
-			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page)) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); await publish(); return {} },
+			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page)) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); return { patch: await snapshot(scope) } },
 			async 'set-follow'(scope, event) {
 				const id = event.value?.id, value = event.value?.value
 				await ready

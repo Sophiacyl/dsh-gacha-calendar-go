@@ -38,13 +38,16 @@ test('game overview collapses long facts instead of reserving an empty icon colu
 	assert.ok(row.children[1].spans.some(span => span.color === 'teal'))
 })
 
-test('selection is a native follow switch, full label and no per-game giant button', () => {
+test('all follow rows use one compact followed/unfollowed design', () => {
 	const name = 'BanG Dream！少女乐团派对·国服'
 	const row = gameRows([{ title: '✓ ' + name, action: { id: 'toggle-game', args: { id: 'bandori' } } }], () => 'asset:bandori.jpg', 'settings')[0]
-	const toggle = row.children[0]
-	assert.equal(toggle.type, 'toggle'); assert.equal(toggle.label, name)
-	assert.equal(toggle.bind, 'data.follow.bandori'); assert.equal(toggle.value, true)
-	assert.deepEqual(toggle.onChange.args, { id: 'bandori' })
+	assert.equal(row.type, 'list')
+	assert.equal(row.items[0].title, name)
+	assert.equal(row.items[0].trailing, '✓ 已关注')
+	assert.deepEqual(row.items[0].action.args, { id: 'bandori', value: false })
+	const unfollowed = gameRows([{ title: '＋ ' + name, action: { args: { id: 'bandori' } } }], () => undefined, 'settings')[0]
+	assert.equal(unfollowed.items[0].trailing, '＋ 关注')
+	assert.equal(unfollowed.items[0].action.args.value, true)
 })
 
 test('detail preserves long text and type colors while keeping dates separate', () => {

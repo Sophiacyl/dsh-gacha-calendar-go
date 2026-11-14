@@ -13,9 +13,7 @@ export function gameRows(items, iconFor, page = 'games') {
 		const src = iconFor(item)
 		if (page === 'settings') {
 			const followed = item.title.startsWith('✓ '), title = item.title.replace(/^[✓＋] /, '')
-			return { type: 'stack', style: { gap: 'S' }, children: [
-				{ type: 'toggle', label: title, bind: `data.follow.${item.action.args.id}`, value: followed, onChange: { id: 'set-follow', args: { id: item.action.args.id } } },
-			] }
+			return { type: 'list', items: [{ title, trailing: followed ? '✓ 已关注' : '＋ 关注', ...(followed ? {} : { tone: 'info' }), action: { id: 'set-follow', args: { id: item.action.args.id, value: !followed } } }] }
 		}
 		if (page === 'games' || page === 'recent') {
 			const status = (item.subtitle || '').replace(/已读取排期/g, '已读').replace(/来源连接失败/g, '连接失败').replace(/未匹配到当期内容/g, '暂无当期')

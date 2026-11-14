@@ -103,10 +103,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		if (s.page === 'settings' && total === 0) imageRows.push({ type: 'text', text: '没有匹配的游戏，试试其他名称。', tone: 'muted' })
 		const searchRows = s.page === 'settings' ? [{ type: 'textField', label: '搜索', placeholder: '游戏名称', bind: 'data.search', value: s.search, maxLength: 80, multiline: false, maxLines: 1, onChange: 'search-games' }] : []
 		if (s.page === 'settings') {
-			// Native views allow 32 inputs total (including search) and 32 children per container.
-			const overflow = items.slice(30)
-			imageRows.splice(30)
-			if (overflow.length) imageRows.push({ type: 'list', items: overflow.map(item => ({ title: item.title, subtitle: item.title.startsWith('✓ ') ? '已关注 · 点击取消' : '点击关注', action: item.action })) })
+			// Clickable rows are not inputs; all games share one follow-row design.
 			if (imageRows.length > 24) {
 				const groups = []
 				for (let i = 0; i < imageRows.length; i += 24) groups.push({ type: 'stack', style: { gap: 'S' }, children: imageRows.slice(i, i + 24) })
@@ -120,7 +117,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		const status = busy ? '正在刷新，请稍候…' : message || (s.page === 'recent' ? `24h内 ${recent.soonCount} 项 · 7天内 ${recent.weekCount} 项` : typeof summary === 'string' ? summary : summary.lastRefreshText)
 		const statusRows = [] // The segmented control label owns the shared one-line status.
 		const navigationRows = [{ type: 'segmented', label: status || '尚未刷新', bind: 'data.navigation', options: [{ label: '近期', value: 'recent' }, { label: '游戏', value: 'games' }, { label: '关注', value: 'settings' }], onChange: 'navigate' }]
-		return { title, items, imageRows, searchRows, statusRows, navigationRows, search: s.search, pageLabel, pageActions, navigation: s.page === 'detail' ? 'games' : s.page, follow: Object.fromEntries(meta.map(g => [g.id, ids.includes(g.id)])), status, hint: s.page === 'settings' ? '搜索后直接开关关注；刷新只抓取已关注游戏。' : s.page === 'detail' ? title : '点行展开，查看同批排期；展开后可进入完整详情。' }
+		return { title, items, imageRows, searchRows, statusRows, navigationRows, search: s.search, pageLabel, pageActions, navigation: s.page === 'detail' ? 'games' : s.page, follow: Object.fromEntries(meta.map(g => [g.id, ids.includes(g.id)])), status, hint: s.page === 'settings' ? '点击游戏行关注或取消；刷新只抓取已关注游戏。' : s.page === 'detail' ? title : '点行展开，查看同批排期；展开后可进入完整详情。' }
 	}
 	async function publish() {
 		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, status: '日历读取失败，请检查存储空间。', hint: '' }) } }))

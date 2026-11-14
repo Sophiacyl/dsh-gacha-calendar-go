@@ -36,7 +36,7 @@ export function gameRows(items, iconFor, page = 'games') {
 export function calendarView(caps = {}) {
 	const native = caps.components?.includes('collapsible') && caps.components?.includes('segmented')
 	return { ...(native ? { v: 2 } : {}), type: 'stack', title: '二游日历', ...(native ? { style: { gap: 'S' } } : {}), children: [
-		native ? { type: 'stack', style: { gap: 'S' }, children: { $: 'data.statusRows' } } : { type: 'text', text: { $: 'data.status' }, tone: 'muted' },
+		...(!native ? [{ type: 'text', text: { $: 'data.status' }, tone: 'muted' }] : []),
 		...(native ? [{ type: 'stack', style: { gap: 'S' }, children: { $: 'data.navigationRows' } }] : []),
 		{ type: 'actions', items: native ? [{ label: '刷新排期', action: 'refresh', icon: 'refresh' }] : [{ label: '近期', action: 'recent' }, { label: '游戏', action: 'home' }, { label: '关注', action: 'settings' }, { label: '刷新', action: 'refresh' }] },
 		native ? { type: 'stack', style: { gap: 'S' }, children: { $: 'data.imageRows' } } : { type: 'list', items: { $: 'data.items' } },

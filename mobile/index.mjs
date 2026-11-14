@@ -23,9 +23,9 @@ export function apply(ctx) {
 			view: (_scope, caps) => calendarView(caps),
 			data(scope, emit) {
 				let stopped = false, cancel
-				emit({ title: '二游日历', status: '正在读取缓存…', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, hint: '' })
+				emit({ title: '二游日历', status: '正在读取缓存…', statusRows: [{ type: 'text', text: '正在读取缓存…' }], items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, hint: '' })
 				getController().then(c => { if (!stopped) cancel = c.subscribe(scope, emit) }).catch(() => {
-					if (!stopped) emit({ title: '二游日历', status: '缓存无法读取，请检查存储空间。', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, hint: '' })
+					if (!stopped) emit({ title: '二游日历', status: '缓存无法读取，请检查存储空间。', statusRows: [{ type: 'text', text: '缓存无法读取，请检查存储空间。' }], items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, hint: '' })
 				})
 				return () => { stopped = true; cancel?.() }
 			},

@@ -9,7 +9,7 @@ const out = resolve(target || join(root, publish ? 'dist/npm' : 'dist/mobile'))
 const packageName = publish ? 'dsh-gacha-calendar-go' : 'local-gacha-calendar-go'
 const upstream = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
 await mkdir(join(out, 'lib'), { recursive: true })
-for (const name of ['index.mjs', 'runtime.mjs', 'model.mjs', 'ui.mjs']) {
+for (const name of ['index.mjs', 'runtime.mjs', 'model.mjs', 'ui.mjs', 'recent.mjs']) {
 	if (publish && name === 'index.mjs') {
 		const source = await readFile(join(root, 'mobile', name), 'utf8')
 		await writeFile(join(out, 'lib', name), source.replace("export const name = 'local-gacha-calendar-go'", `export const name = '${packageName}'`))

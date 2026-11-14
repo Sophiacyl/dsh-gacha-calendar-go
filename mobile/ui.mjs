@@ -1,69 +1,47 @@
-// Keep detail/selection titles full-width; compact only the game overview.
 export const PAGE_SIZE = 8
-// Upstream scheduleKindIcon: four-point star (gacha), pennant (event).
-const withKindMark = value => value.replace(/卡池/g, '✦ 卡池').replace(/活动/g, '⚑ 活动')
 const KIND_COLORS = { '卡池': 'indigo', '活动': 'teal' }
-function kindSpans(value) {
-	return value.split(/(✦ 卡池|⚑ 活动)/).filter(Boolean).map(text => ({ text, ...(/^[✦⚑] /.test(text) ? { color: text.startsWith('✦') ? KIND_COLORS.卡池 : KIND_COLORS.活动, weight: 'semibold' } : {}) }))
+const marked = text => text.replace(/卡池/g, '✦ 卡池').replace(/活动/g, '⚑ 活动')
+function textNode(text, muted = false) {
+	return { type: 'text', text, ...(muted ? { tone: 'muted' } : {}), style: { size: muted ? 'caption' : 'body', maxLines: 20 } }
+}
+function colored(text) {
+	const value = marked(text)
+	return { ...textNode(value, true), spans: value.split(/(✦ 卡池|⚑ 活动)/).filter(Boolean).map(text => ({ text, ...(/^[✦⚑] /.test(text) ? { color: text.startsWith('✦') ? 'indigo' : 'teal', weight: 'semibold' } : {}) })) }
 }
 export function gameRows(items, iconFor, page = 'games') {
 	return items.map(item => {
 		const src = iconFor(item)
-		if (page === 'games') {
-			const status = (item.subtitle || '').replace(/已读取排期/g, '已读').replace(/卡池：/g, '卡池').replace(/活动：/g, '活动').replace(/来源连接失败/g, '连接失败').replace(/未匹配到当期内容/g, '暂无当期').replace(/\r?\n/g, ' · ')
-			const lines = [
-				{ type: 'text', text: item.title, style: { size: 'body', weight: 'semibold', maxLines: 20 } },
-			]
-			if (item.trailing) lines.push({ type: 'text', text: item.trailing, style: { size: 'caption', maxLines: 20 } })
-			if (status) lines.push({ type: 'text', text: withKindMark(status), spans: kindSpans(withKindMark(status)), tone: 'muted', style: { size: 'caption', maxLines: 20 } })
-			const content = { type: 'row', style: { gap: 'S', align: 'start', ...(src ? { columns: [1, 1] } : {}) }, children: [
-				...(src ? [{ type: 'stack', style: { align: 'end' }, children: [{ type: 'avatar', src, alt: item.title, aspect: 1 }] }] : []),
-				{ type: 'stack', style: { gap: 'S', align: 'start' }, children: lines },
-			] }
-			return { type: 'stack', style: { card: 'plain', gap: 'S' }, children: [
-				content,
-				...(item.action ? [{ type: 'actions', items: [{ label: '查看详情', action: item.action }] }] : []),
-				{ type: 'divider' },
-			] }
-		}
 		if (page === 'settings') {
-			const followed = item.title.startsWith('✓ ')
-			const title = item.title.replace(/^[✓＋] /, '')
+			const followed = item.title.startsWith('✓ '), title = item.title.replace(/^[✓＋] /, '')
 			return { type: 'stack', style: { gap: 'S' }, children: [
-				{ type: 'row', style: { columns: [1, 1], gap: 'S', align: 'center' }, children: [
-					{ type: 'stack', style: { gap: 'S', align: 'start' }, children: [
-						...(src ? [{ type: 'avatar', src, alt: title, aspect: 1 }] : []),
-						{ type: 'text', text: title, style: { size: 'body', weight: 'medium', maxLines: 20 } },
-					] },
-					{ type: 'actions', items: item.action ? [{ label: followed ? '取消关注' : '关注', action: item.action }] : [] },
-				] },
-				{ type: 'divider' },
+				{ type: 'toggle', label: title, bind: `data.follow.${item.action.args.id}`, value: followed, onChange: { id: 'set-follow', args: { id: item.action.args.id } } },
 			] }
 		}
-		const children = []
-		if (src) children.push({ type: 'avatar', src, alt: item.title, aspect: 1 })
+		if (page === 'games' || page === 'recent') {
+			const status = (item.subtitle || '').replace(/已读取排期/g, '已读').replace(/来源连接失败/g, '连接失败').replace(/未匹配到当期内容/g, '暂无当期')
+			return { type: 'collapsible', label: `${page === 'recent' ? marked(item.title) : item.title} · ${item.trailing || '查看排期'}`, expanded: false, children: [
+				...(src ? [{ type: 'avatar', src, alt: item.title, aspect: 1 }] : []),
+				colored(status),
+				...(item.action ? [{ type: 'actions', items: [{ label: '完整排期', action: item.action }] }] : []),
+			] }
+		}
 		const kind = item.title.match(/^(卡池|活动)/)?.[1]
-		children.push({ type: 'text', text: item.title.replace(/^(卡池|活动)/, kind => kind === '卡池' ? '✦ 卡池' : '⚑ 活动'), style: { weight: 'semibold', maxLines: 20, ...(kind ? { color: KIND_COLORS[kind] } : {}) } })
-		if (item.trailing) children.push({ type: 'text', text: item.trailing, style: { maxLines: 20 } })
-		if (item.subtitle) children.push({ type: 'text', text: item.subtitle.replace(/ → /g, '\n至 '), tone: 'muted', style: { maxLines: 20 } })
-		if (item.action) children.push({ type: 'actions', items: [{ label: page === 'settings' ? item.title.startsWith('✓ ') ? '取消关注' : '关注游戏' : '查看详情', action: item.action }] })
-		return { type: 'stack', style: { card: 'outlined', gap: 'S' }, children }
+		return { type: 'stack', style: { card: 'outlined', gap: 'S', padding: 'S' }, children: [
+			{ ...textNode(item.title.replace(/^(卡池|活动)/, kind => kind === '卡池' ? '✦ 卡池' : '⚑ 活动')), style: { size: 'body', weight: 'semibold', maxLines: 20, ...(kind ? { color: KIND_COLORS[kind] } : {}) } },
+			...(item.trailing ? [textNode(item.trailing)] : []),
+			...(item.subtitle ? [textNode(item.subtitle.replace(/ → /g, '\n至 '), true)] : []),
+		] }
 	})
 }
-
 export function calendarView(caps = {}) {
-	const images = caps.components?.includes('avatar') === true
-	return { ...(images ? { v: 2 } : {}), type: 'stack', title: '二游日历', children: [
-		{ type: 'text', text: { $: 'data.title' }, ...(images ? { style: { weight: 'semibold', maxLines: 20 } } : {}) },
-		{ type: 'text', text: { $: 'data.status' }, tone: 'muted' },
-		{ type: 'actions', items: [
-			{ label: '游戏列表', action: 'home', icon: 'list' },
-			{ label: '选择游戏', action: 'settings', icon: 'settings' },
-			{ label: '刷新', action: 'refresh', icon: 'refresh', ...(images ? {} : { style: 'primary' }) },
-		] },
-		images ? { type: 'stack', children: { $: 'data.imageRows' } } : { type: 'list', items: { $: 'data.items' } },
+	const native = caps.components?.includes('collapsible') && caps.components?.includes('segmented')
+	return { ...(native ? { v: 2 } : {}), type: 'stack', title: '二游日历', ...(native ? { style: { gap: 'S' } } : {}), children: [
+		{ type: 'text', text: { $: 'data.status' }, tone: 'muted', ...(native ? { style: { size: 'caption', maxLines: 8 } } : {}) },
+		...(native ? [{ type: 'segmented', label: '查看', bind: 'data.navigation', options: [{ label: '近期', value: 'recent' }, { label: '游戏', value: 'games' }, { label: '关注', value: 'settings' }], onChange: 'navigate' }] : []),
+		{ type: 'actions', items: native ? [{ label: '刷新排期', action: 'refresh', icon: 'refresh' }] : [{ label: '近期', action: 'recent' }, { label: '游戏', action: 'home' }, { label: '关注', action: 'settings' }, { label: '刷新', action: 'refresh' }] },
+		native ? { type: 'stack', children: { $: 'data.imageRows' } } : { type: 'list', items: { $: 'data.items' } },
 		{ type: 'text', text: { $: 'data.pageLabel' }, tone: 'muted' },
-		{ type: 'actions', items: [ { label: '上一页', action: 'previous-page' }, { label: '下一页', action: 'next-page' } ] },
-		{ type: 'text', text: { $: 'data.hint' }, tone: 'muted' },
+		{ type: 'actions', items: { $: 'data.pageActions' } },
+		{ type: 'text', text: { $: 'data.hint' }, tone: 'muted', ...(native ? { style: { size: 'caption', maxLines: 4 } } : {}) },
 	] }
 }

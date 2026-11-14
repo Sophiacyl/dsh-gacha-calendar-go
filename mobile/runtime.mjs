@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile, rename } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { gameRows, PAGE_SIZE } from './ui.mjs'
+import { buildRecent } from './recent.mjs'
 
 export const DEFAULT_GAMES = ['genshin', 'hsr', 'zzz', 'wuwa', 'arknights', 'r1999']
 
@@ -68,15 +69,19 @@ export function createController({ engine, store, transport, model, icons = {}, 
 				const inactive = [...sessions.keys()].find(k => ![...feeds].some(f => (f.scope.sessionId || 'global') === k))
 				if (inactive) sessions.delete(inactive)
 			}
-			sessions.set(key, { page: 'games', game: null, pageIndex: 0, search: '' })
+			sessions.set(key, { page: 'recent', game: null, pageIndex: 0, search: '' })
 		}
 		return sessions.get(key)
 	}
 	async function snapshot(scope) {
 		await ready
 		const ids = await selected(), s = state(scope)
+		const recent = buildRecent(meta, result, ids, now())
 		let title = '二游日历', items
-		if (s.page === 'settings') {
+		if (s.page === 'recent') {
+			title = '近期排期'
+			items = recent.items
+		} else if (s.page === 'settings') {
 			title = '选择关注的游戏'
 			items = meta.filter(g => `${g.name} ${g.id}`.toLocaleLowerCase().includes(s.search.trim().toLocaleLowerCase())).map(g => ({ title: `${ids.includes(g.id) ? '✓ ' : '＋ '}${g.name}`, subtitle: ids.includes(g.id) ? '已关注 · 点击取消' : '未关注 · 点击添加', action: { id: 'toggle-game', args: { id: g.id } } }))
 		} else if (s.page === 'detail' && meta.some(g => g.id === s.game)) {
@@ -93,15 +98,18 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		const imageRows = s.page === 'detail'
 			? [...(icons[s.game] ? [{ type: 'avatar', src: icons[s.game], alt: title, aspect: 1 }] : []), ...gameRows(items, () => undefined, 'detail')]
 			: gameRows(items, item => icons[item.action?.args?.id], s.page)
+		if (s.page === 'recent' && total === 0) imageRows.push({ type: 'text', text: result.refreshedAt ? '未来七天暂无可确认的截止或开启排期。' : '先选择关注游戏，再点刷新获取近期排期。', tone: 'muted' })
+		if (s.page === 'detail') imageRows.unshift({ type: 'actions', items: [{ label: '返回游戏', action: 'home', icon: 'list' }] })
 		if (s.page === 'settings' && total === 0) imageRows.push({ type: 'text', text: '没有匹配的游戏，试试其他名称。', tone: 'muted' })
 		const searchRows = s.page === 'settings' ? [{ type: 'textField', label: '搜索', placeholder: '游戏名称', bind: 'data.search', value: s.search, maxLength: 80, multiline: false, maxLines: 1, onChange: 'search-games' }] : []
 		imageRows.unshift(...searchRows)
 		const pageLabel = `第 ${s.pageIndex + 1} / ${pageCount} 页 · 共 ${total} 项`
 		const summary = model.summarize(result, ids, now())
-		return { title, items, imageRows, searchRows, search: s.search, pageLabel, status: busy ? '正在刷新，请稍候…' : message || (typeof summary === 'string' ? summary : [summary.text, summary.lastRefreshText].filter(Boolean).join('\n')), hint: s.page === 'settings' ? '选择会自动保存；返回后点刷新获取数据。' : '点游戏查看详情；倒计时每分钟更新。' }
+		const pageActions = pageCount > 1 ? [ ...(s.pageIndex > 0 ? [{ label: '上一页', action: 'previous-page' }] : []), ...(s.pageIndex < pageCount - 1 ? [{ label: '下一页', action: 'next-page' }] : []) ] : []
+		return { title, items, imageRows, searchRows, search: s.search, pageLabel, pageActions, navigation: s.page === 'detail' ? 'games' : s.page, follow: Object.fromEntries(meta.map(g => [g.id, ids.includes(g.id)])), status: busy ? '正在刷新，请稍候…' : message || (s.page === 'recent' ? `24小时内 ${recent.soonCount} 项 · 7天内 ${recent.weekCount} 项\n${recent.nextText}` : typeof summary === 'string' ? summary : summary.lastRefreshText), hint: s.page === 'settings' ? '搜索后直接开关关注；刷新只抓取已关注游戏。' : s.page === 'detail' ? title : '点行展开，查看同批排期；展开后可进入完整详情。' }
 	}
 	async function publish() {
-		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], status: '日历读取失败，请检查存储空间。', hint: '' }) } }))
+		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, status: '日历读取失败，请检查存储空间。', hint: '' }) } }))
 	}
 	async function refresh(signal) {
 		await ready
@@ -133,6 +141,17 @@ export function createController({ engine, store, transport, model, icons = {}, 
 			return () => { feeds.delete(feed); if (!feeds.size) { clearInterval(tick); tick = null } }
 		},
 		actions: {
+			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); await publish(); return {} },
+			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page)) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); await publish(); return {} },
+			async 'set-follow'(scope, event) {
+				const id = event.value?.id, value = event.value?.value
+				await ready
+				if (busy) { await publish(); return { toast: '请等刷新结束后再修改。' } }
+				if (!meta.some(g => g.id === id) || typeof value !== 'boolean') return {}
+				const save = selectionQueue.then(async () => { const ids = await selected(); await store.set('mobileSelected', value ? [...new Set([...ids, id])] : ids.filter(x => x !== id)); await syncSelection() })
+				selectionQueue = save.catch(() => {})
+				try { await save; await publish(); return {} } catch { await publish(); return { toast: '保存失败，请检查存储空间。' } }
+			},
 			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(); return {} },
 			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(); return {} },
 			async 'search-games'(scope, event) { const s = state(scope); s.search = typeof event.value?.value === 'string' ? event.value.value.slice(0, 80) : ''; s.pageIndex = 0; await publish(); return {} },

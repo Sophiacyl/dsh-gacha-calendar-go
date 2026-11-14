@@ -78,6 +78,8 @@ function installCountingTransport(overrides) {
 	const base = makeFetchTransport(impl);
 	const rec = { raw: 0, proxy: 0, rawTargets: [], proxyTargets: [], proxyOpts: [] };
 	T.setCoreEnv({
+		// Offline fixtures were captured on Nov 7; never judge their windows by today's clock.
+		now: () => Date.parse('2026-11-07T04:00:00Z'),
 		transport: {
 			async fetchRaw(u, o) { rec.raw++; rec.rawTargets.push(String(u)); return base.fetchRaw(u, o); },
 			async fetchViaProxy(u, o) { rec.proxy++; rec.proxyTargets.push(String(u)); rec.proxyOpts.push(o || {}); return base.fetchViaProxy(u, o); }

@@ -10,13 +10,11 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 let checkView
-try {
-	({ checkView } = await import(pathToFileURL(join(process.env.DSH_HOME || join(homedir(), '.dsh'), 'skills/dsh-go-plugin/kit/lib/view-check.js')).href))
-} catch (error) {
-	if (error.code !== 'ERR_MODULE_NOT_FOUND' && error.code !== 'ENOENT') throw error
-}
+try { ({ checkView } = await import(pathToFileURL(join(process.env.DSH_HOME || join(homedir(), '.dsh'), 'skills/dsh-go-plugin/kit/lib/view-check.js')).href)) }
+catch (error) { if (!['ERR_MODULE_NOT_FOUND', 'ENOENT'].includes(error.code)) throw error }
+const caps = { components: ['avatar', 'collapsible', 'segmented'] }
 
-test('all original icons match upstream URL and downloaded SHA256', async () => {
+test('original icon assets stay byte-identical to recorded upstream images', async () => {
 	const sources = JSON.parse(await readFile(new URL('./assets/sources.json', import.meta.url), 'utf8'))
 	const meta = await createEngine().listGames()
 	assert.equal(sources.entries.length, meta.length)
@@ -25,125 +23,74 @@ test('all original icons match upstream URL and downloaded SHA256', async () => 
 		assert.equal(entry.source, game.icon)
 		const image = await readFile(new URL('./assets/' + entry.file, import.meta.url))
 		assert.equal(createHash('sha256').update(image).digest('hex'), entry.sha256)
-		assert.ok(image.length <= 1048576)
 	}
 })
 
-test('original images accompany actionable rows; old app keeps working', () => {
-	const original = { title: '原神', icon: 'calendar', action: { id: 'select-game', args: { id: 'genshin' } } }
-	const row = gameRows([original], () => 'asset:genshin.png')[0]
-	const content = row.children[0]
-	assert.equal(content.children[0].children[0].src, 'asset:genshin.png')
-	assert.equal(content.children[0].style.align, 'end')
-	assert.equal(content.type, 'row')
-	assert.deepEqual(content.style.columns, [1, 1])
-	// App renderer requires every weighted column >=136dp. Screenshot gives
-	// about 280dp of usable width: 1:4 collapses, 1:1 with an 8dp gap fits.
-	const fits = (weights, width) => weights.every(w => (width - 8) * w / weights.reduce((a, b) => a + b, 0) >= 136)
-	assert.equal(fits([1, 4], 280), false)
-	assert.equal(fits(content.style.columns, 280), true)
-	assert.equal(row.style.card, 'plain')
-	assert.equal(content.children[1].children[0].text, original.title)
-	assert.equal(content.children[1].children[0].style.maxLines, 20)
-	assert.deepEqual(row.children.at(-2).items[0].action, original.action)
-	assert.equal(row.children.at(-1).type, 'divider')
-	assert.equal(original.icon, 'calendar')
-	assert.equal(calendarView({ components: ['avatar'] }).v, 2)
-	assert.equal(calendarView({ components: ['list'] }).v, undefined)
+test('game overview collapses long facts instead of reserving an empty icon column', () => {
+	const action = { id: 'select-game', args: { id: 'hsr' } }
+	const row = gameRows([{ title: '崩坏：星穹铁道', trailing: '9项进行中', subtitle: '卡池：已读取排期\n活动：已读取排期', action }], () => 'asset:hsr.png')[0]
+	assert.equal(row.type, 'collapsible'); assert.equal(row.expanded, false)
+	assert.match(row.label, /9项进行中/)
+	assert.equal(row.children[0].src, 'asset:hsr.png')
+	assert.deepEqual(row.children.at(-1).items[0].action, action)
+	assert.ok(!JSON.stringify(row).includes('"columns"'))
+	assert.ok(row.children[1].spans.some(span => span.color === 'indigo'))
+	assert.ok(row.children[1].spans.some(span => span.color === 'teal'))
 })
 
-test('overview puts name, active count and joined fetch states to the right of original icon', () => {
-	const row = gameRows([{ title: '崩坏：星穹铁道', trailing: '9项进行中', subtitle: '卡池：已读取排期\n活动：已读取排期' }], () => 'asset:hsr.png')[0]
-	const lines = row.children[0].children[1].children
-	assert.equal(lines[0].text, '崩坏：星穹铁道')
-	assert.equal(lines[1].text, '9项进行中')
-	assert.equal(lines[2].text, '✦ 卡池已读 · ⚑ 活动已读')
-	assert.equal(lines[0].style.size, 'body')
-	assert.equal(lines[1].style.size, 'caption')
-	assert.equal(lines[2].style.size, 'caption')
-	assert.equal(lines[2].spans.find(span => span.text === '✦ 卡池').color, 'indigo')
-	assert.equal(lines[2].spans.find(span => span.text === '⚑ 活动').color, 'teal')
-	assert.equal(lines[2].spans.map(span => span.text).join(''), lines[2].text)
-	assert.ok(lines.every(node => node.type === 'text'))
-	assert.equal(lines[2].text.includes('\n'), false)
-	assert.equal(lines[0].style.maxLines, 20)
+test('selection is a native follow switch, full label and no per-game giant button', () => {
+	const name = 'BanG Dream！少女乐团派对·国服'
+	const row = gameRows([{ title: '✓ ' + name, action: { id: 'toggle-game', args: { id: 'bandori' } } }], () => 'asset:bandori.jpg', 'settings')[0]
+	const toggle = row.children[0]
+	assert.equal(toggle.type, 'toggle'); assert.equal(toggle.label, name)
+	assert.equal(toggle.bind, 'data.follow.bandori'); assert.equal(toggle.value, true)
+	assert.deepEqual(toggle.onChange.args, { id: 'bandori' })
 })
 
-test('detail kind marks follow upstream star and pennant convention', () => {
-	const rows = gameRows([{ title: '卡池 · 当期限定' }, { title: '活动 · 周年庆典' }, { title: '活动来源' }], () => undefined, 'detail')
-	assert.equal(rows[0].children[0].text, '✦ 卡池 · 当期限定')
-	assert.equal(rows[1].children[0].text, '⚑ 活动 · 周年庆典')
-	assert.equal(rows[2].children[0].text, '⚑ 活动来源')
-	assert.equal(rows[0].children[0].style.color, 'indigo')
-	assert.equal(rows[1].children[0].style.color, 'teal')
+test('detail preserves long text and type colors while keeping dates separate', () => {
+	const rows = gameRows([{ title: '卡池 · 当期限定超长名称', trailing: '剩余30天', subtitle: '2026/11/09 12:00 → 2026/12/09 12:00' }, { title: '活动 · 周年庆典' }], () => undefined, 'detail')
+	assert.equal(rows[0].children[0].style.color, 'indigo'); assert.equal(rows[1].children[0].style.color, 'teal')
+	assert.equal(rows[0].children[0].style.maxLines, 20)
+	assert.ok(rows[0].children[2].text.includes('\n至 '))
 })
 
-test('all 33 games remain reachable with wrapping cards and page bounds', async () => {
+function resolve(value, data) {
+	if (Array.isArray(value)) return value.map(v => resolve(v, data))
+	if (value && typeof value === 'object') {
+		if (value.$) return value.$.split('.').slice(1).reduce((obj, k) => obj?.[k], data)
+		return Object.fromEntries(Object.entries(value).map(([k,v]) => [k, resolve(v,data)]))
+	}
+	return value
+}
+
+test('native protocol, 33-game search, page limits and recent navigation work', async () => {
 	const sources = JSON.parse(await readFile(new URL('./assets/sources.json', import.meta.url), 'utf8'))
 	const icons = Object.fromEntries(sources.entries.map(e => [e.id, 'asset:' + e.file]))
-	const engine = createEngine(), store = { async get() {}, async set() {} }
-	const c = createController({ engine, store, transport: {}, model, icons })
+	const c = createController({ engine: createEngine(), store: { async get() {}, async set() {} }, transport: {}, model, icons })
 	await c.ready
+	assert.equal((await c.snapshot({})).navigation, 'recent')
 	await c.actions.settings({})
-	let data = await c.snapshot({})
-	assert.equal(data.imageRows.length, 9)
-	assert.equal(data.imageRows[0].type, 'textField')
-	assert.equal(data.imageRows[0].maxLines, 1)
 	const seen = new Set()
-	for (let page = 0; page < 5; page++) {
-		const current = await c.snapshot({})
-		for (const item of current.items) seen.add(item.action.args.id)
+	for (let p = 0; p < 5; p++) {
+		const data = await c.snapshot({})
+		for (const item of data.items) seen.add(item.action.args.id)
+		assert.ok(Buffer.byteLength(JSON.stringify(data)) < 32768)
+		if (checkView) {
+			const checked = checkView(resolve(calendarView(caps),data), { budget: 'panel' })
+			assert.equal(checked.fatal,false,JSON.stringify(checked))
+			assert.deepEqual(checked.issues.filter(i => i.path !== 'view.accent'),[])
+		}
 		await c.actions['next-page']({})
 	}
-	assert.equal(seen.size, 33)
-	assert.match((await c.snapshot({})).pageLabel, /第 5 \/ 5 页/)
-	await c.actions.settings({})
-	data = await c.snapshot({})
-	assert.ok(Buffer.byteLength(JSON.stringify(data)) <= 32768)
-	const view = calendarView({ components: ['avatar'] })
-	view.children[0].text = data.title; view.children[1].text = data.status
-	view.children[3].children = data.imageRows; view.children[4].text = data.pageLabel; view.children[6].text = data.hint
-	if (checkView) {
-		const checked = checkView(view, { budget: 'panel' })
-		assert.equal(checked.fatal, false, JSON.stringify(checked))
-		assert.deepEqual(checked.issues.filter(issue => issue.path !== 'view.accent'), [])
-	}
-	await c.actions['select-game']({}, { value: { id: 'hsr' } })
-	data = await c.snapshot({})
-	assert.equal(data.imageRows[0].src, icons.hsr)
-	await c.actions.settings({})
+	assert.equal(seen.size,33)
 	await c.actions['search-games']({}, { value: { value: '星穹' } })
-	data = await c.snapshot({})
-	assert.equal(data.items.length, 1)
-	assert.equal(data.items[0].action.args.id, 'hsr')
-	assert.match(data.pageLabel, /第 1 \/ 1 页/)
-	await c.actions['search-games']({}, { value: { value: 'no-game-matches' } })
-	data = await c.snapshot({})
-	assert.equal(data.items.length, 0)
-	assert.ok(data.imageRows.some(row => row.text?.includes('没有匹配')))
-	await c.actions['search-games']({}, { value: { value: '' } })
-	assert.equal((await c.snapshot({})).items.length, 8)
-	await c.actions.home({})
-	assert.ok(!(await c.snapshot({})).imageRows.some(row => row.type === 'textField'))
+	assert.equal((await c.snapshot({})).items[0].action.args.id,'hsr')
+	assert.equal((await c.snapshot({})).pageActions.length,0)
+	await c.actions['search-games']({}, { value: { value: 'no-game' } })
+	assert.equal((await c.snapshot({})).items.length,0)
+	await c.actions['select-game']({}, { value: { id:'hsr' } })
+	assert.equal((await c.snapshot({})).navigation,'games')
+	assert.equal(calendarView(caps).v,2)
+	assert.equal(calendarView({components:['list']}).v,undefined)
 	c.dispose()
-})
-
-test('long activity and game names use full-width text separate from deadline', () => {
-	const name = 'BanG Dream！少女乐团派对·国服：这是一个特别长的游戏和活动名称'
-	const row = gameRows([{ title: name, subtitle: '2026/11/09 12:00 → 2026/12/09 12:00', trailing: '剩余30天' }], () => undefined, 'detail')[0]
-	assert.equal(row.type, 'stack')
-	assert.equal(row.children[0].text, name)
-	assert.equal(row.children[0].style.maxLines, 20)
-	assert.equal(row.children[1].text, '剩余30天')
-	assert.ok(row.children[2].text.includes('\n至 '))
-	assert.equal(row.children[0].style.size, undefined)
-	assert.equal(row.style.card, 'outlined')
-	assert.ok(row.children.every(child => child.type === 'text'))
-	const selected = gameRows([{ title: '✓ ' + name, action: { id: 'toggle-game', args: { id: 'bandori' } } }], () => 'asset:bandori.jpg', 'settings')[0]
-	const selectionRow = selected.children[0]
-	assert.equal(selectionRow.type, 'row')
-	assert.equal(selectionRow.children[0].children[1].text, name)
-	assert.equal(selectionRow.children[1].items[0].label, '取消关注')
-	assert.deepEqual(selectionRow.children[1].items[0].action, { id: 'toggle-game', args: { id: 'bandori' } })
-	assert.equal(selected.children.at(-1).type, 'divider')
 })

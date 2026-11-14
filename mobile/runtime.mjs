@@ -108,21 +108,8 @@ export function createController({ engine, store, transport, model, icons = {}, 
 		const pageActions = pageCount > 1 ? [ ...(s.pageIndex > 0 ? [{ label: '上一页', action: 'previous-page' }] : []), ...(s.pageIndex < pageCount - 1 ? [{ label: '下一页', action: 'next-page' }] : []) ] : []
 		return { title, items, imageRows, searchRows, search: s.search, pageLabel, pageActions, navigation: s.page === 'detail' ? 'games' : s.page, follow: Object.fromEntries(meta.map(g => [g.id, ids.includes(g.id)])), status: busy ? '正在刷新，请稍候…' : message || (s.page === 'recent' ? `24小时内 ${recent.soonCount} 项 · 7天内 ${recent.weekCount} 项\n${recent.nextText}` : typeof summary === 'string' ? summary : summary.lastRefreshText), hint: s.page === 'settings' ? '搜索后直接开关关注；刷新只抓取已关注游戏。' : s.page === 'detail' ? title : '点行展开，查看同批排期；展开后可进入完整详情。' }
 	}
-	async function publish(scope) {
-		const targets = [...feeds].filter(f => !scope || (f.scope.sessionId || 'global') === (scope.sessionId || 'global'))
-		await Promise.all(targets.map(async f => {
-			const revision = ++f.revision
-			try {
-				const data = await snapshot(f.scope)
-				if (!feeds.has(f) || revision !== f.revision) return
-				const serialized = JSON.stringify(data)
-				if (serialized === f.last) return
-				f.last = serialized
-				f.emit(data)
-			} catch {
-				if (feeds.has(f) && revision === f.revision) f.emit({ title: '二游日历', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, status: '日历读取失败，请检查存储空间。', hint: '' })
-			}
-		}))
+	async function publish() {
+		await Promise.all([...feeds].map(async f => { try { const data = await snapshot(f.scope); if (feeds.has(f)) f.emit(data) } catch { if (feeds.has(f)) f.emit({ title: '二游日历', items: [], imageRows: [], pageActions: [], pageLabel: '', navigation: 'recent', follow: {}, status: '日历读取失败，请检查存储空间。', hint: '' }) } }))
 	}
 	async function refresh(signal) {
 		await ready
@@ -149,13 +136,13 @@ export function createController({ engine, store, transport, model, icons = {}, 
 	return {
 		ready, snapshot,
 		subscribe(scope, emit) {
-			const feed = { scope, emit, revision: 0, last: null }; feeds.add(feed); void publish(scope)
+			const feed = { scope, emit }; feeds.add(feed); void publish()
 			if (!tick) { tick = setInterval(() => void publish(), 60000); tick.unref?.() }
 			return () => { feeds.delete(feed); if (!feeds.size) { clearInterval(tick); tick = null } }
 		},
 		actions: {
-			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); await publish(scope); return {} },
-			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page) || state(scope).page === page) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); await publish(scope); return {} },
+			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); await publish(); return {} },
+			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page)) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); await publish(); return {} },
 			async 'set-follow'(scope, event) {
 				const id = event.value?.id, value = event.value?.value
 				await ready
@@ -165,12 +152,12 @@ export function createController({ engine, store, transport, model, icons = {}, 
 				selectionQueue = save.catch(() => {})
 				try { await save; await publish(); return {} } catch { await publish(); return { toast: '保存失败，请检查存储空间。' } }
 			},
-			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(scope); return {} },
-			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(scope); return {} },
-			async 'search-games'(scope, event) { const s = state(scope); s.search = typeof event.value?.value === 'string' ? event.value.value.slice(0, 80) : ''; s.pageIndex = 0; await publish(scope); return {} },
-			async 'previous-page'(scope) { state(scope).pageIndex--; await publish(scope); return {} },
-			async 'next-page'(scope) { state(scope).pageIndex++; await publish(scope); return {} },
-			async 'select-game'(scope, event) { await ready; if (!meta.some(g => g.id === event.value?.id)) return { toast: '游戏不存在。' }; Object.assign(state(scope), { page: 'detail', game: event.value.id, pageIndex: 0 }); await publish(scope); return {} },
+			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(); return {} },
+			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(); return {} },
+			async 'search-games'(scope, event) { const s = state(scope); s.search = typeof event.value?.value === 'string' ? event.value.value.slice(0, 80) : ''; s.pageIndex = 0; await publish(); return {} },
+			async 'previous-page'(scope) { state(scope).pageIndex--; await publish(); return {} },
+			async 'next-page'(scope) { state(scope).pageIndex++; await publish(); return {} },
+			async 'select-game'(scope, event) { await ready; if (!meta.some(g => g.id === event.value?.id)) return { toast: '游戏不存在。' }; Object.assign(state(scope), { page: 'detail', game: event.value.id, pageIndex: 0 }); await publish(); return {} },
 			async 'toggle-game'(scope, event) {
 				await ready
 				if (busy) return { toast: '请等刷新结束后再修改。' }

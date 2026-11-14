@@ -60,25 +60,3 @@ test('controller is cache-only until refresh; selection and navigation work inde
 	assert.equal((await c.snapshot({})).navigation, 'recent')
 	stop(); c.dispose()
 })
-
-test('navigation only updates its own session and skips identical emissions', async () => {
-	const store = { async get() {}, async set() {} }
-	const engine = { async listGames() { return [{ id: 'hsr', name: '星铁' }] }, async getCached() { return { games: {}, refreshedAt: 0 } } }
-	const model = { buildGameItems() { return [{ title: '星铁' }] }, buildDetailItems() { return [] }, summarize() { return { lastRefreshText: '尚未刷新' } } }
-	const c = createController({ engine, store, model, transport: {} })
-	await c.ready
-	const a = [], b = []
-	const stopA = c.subscribe({ sessionId: 'a' }, d => a.push(d))
-	const stopB = c.subscribe({ sessionId: 'b' }, d => b.push(d))
-	await new Promise(resolve => setImmediate(resolve))
-	const countB = b.length
-	await c.actions.navigate({ sessionId: 'a' }, { value: { value: 'games' } })
-	assert.equal(a.at(-1).navigation, 'games')
-	assert.equal(b.length, countB)
-	const countA = a.length
-	await c.actions.navigate({ sessionId: 'a' }, { value: { value: 'games' } })
-	assert.equal(a.length, countA)
-	await Promise.all(['settings', 'recent', 'games'].map(value => c.actions.navigate({ sessionId: 'a' }, { value: { value } })))
-	assert.equal(a.at(-1).navigation, 'games')
-	stopA(); stopB(); c.dispose()
-})

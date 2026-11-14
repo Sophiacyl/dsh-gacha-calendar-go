@@ -141,7 +141,7 @@ export function createController({ engine, store, transport, model, icons = {}, 
 			return () => { feeds.delete(feed); if (!feeds.size) { clearInterval(tick); tick = null } }
 		},
 		actions: {
-			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); await publish(); return {} },
+			async recent(scope) { Object.assign(state(scope), { page: 'recent', pageIndex: 0 }); return { patch: await snapshot(scope) } },
 			async navigate(scope, event) { const page = event.value?.value; if (!['recent', 'games', 'settings'].includes(page)) return {}; Object.assign(state(scope), { page, pageIndex: 0 }); await publish(); return {} },
 			async 'set-follow'(scope, event) {
 				const id = event.value?.id, value = event.value?.value
@@ -152,8 +152,8 @@ export function createController({ engine, store, transport, model, icons = {}, 
 				selectionQueue = save.catch(() => {})
 				try { await save; await publish(); return {} } catch { await publish(); return { toast: '保存失败，请检查存储空间。' } }
 			},
-			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); await publish(); return {} },
-			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); await publish(); return {} },
+			async home(scope) { Object.assign(state(scope), { page: 'games', pageIndex: 0 }); return { patch: await snapshot(scope) } },
+			async settings(scope) { Object.assign(state(scope), { page: 'settings', pageIndex: 0 }); return { patch: await snapshot(scope) } },
 			async 'search-games'(scope, event) { const s = state(scope); s.search = typeof event.value?.value === 'string' ? event.value.value.slice(0, 80) : ''; s.pageIndex = 0; await publish(); return {} },
 			async 'previous-page'(scope) { state(scope).pageIndex--; await publish(); return {} },
 			async 'next-page'(scope) { state(scope).pageIndex++; await publish(); return {} },

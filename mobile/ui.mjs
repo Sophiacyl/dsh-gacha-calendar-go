@@ -37,7 +37,7 @@ export function calendarView(caps = {}) {
 	const native = caps.components?.includes('collapsible') && caps.components?.includes('segmented')
 	return { ...(native ? { v: 2 } : {}), type: 'stack', title: '二游日历', ...(native ? { style: { gap: 'S' } } : {}), children: [
 		{ type: 'text', text: { $: 'data.status' }, tone: 'muted', ...(native ? { style: { size: 'caption', maxLines: 8 } } : {}) },
-		...(native ? [{ type: 'segmented', label: '查看', bind: 'data.navigation', options: [{ label: '近期', value: 'recent' }, { label: '游戏', value: 'games' }, { label: '关注', value: 'settings' }], onChange: 'navigate' }] : []),
+		...(native ? [{ type: 'actions', items: [{ label: '近期', action: 'recent' }, { label: '游戏', action: 'home' }, { label: '关注', action: 'settings' }] }] : []),
 		{ type: 'actions', items: native ? [{ label: '刷新排期', action: 'refresh', icon: 'refresh' }] : [{ label: '近期', action: 'recent' }, { label: '游戏', action: 'home' }, { label: '关注', action: 'settings' }, { label: '刷新', action: 'refresh' }] },
 		native ? { type: 'stack', style: { gap: 'S' }, children: { $: 'data.imageRows' } } : { type: 'list', items: { $: 'data.items' } },
 		{ type: 'text', text: { $: 'data.pageLabel' }, tone: 'muted', ...(native ? { style: { size: 'caption' } } : {}) },
